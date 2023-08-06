@@ -45,8 +45,9 @@ from transformers.modeling_utils import (
 from transformers.utils import logging
 from transformers.models.bert.configuration_bert import BertConfig
 
-from Qformer_lora import lora
-import Qformer_lora
+# import lavis.models.blip2_models.Qformer_lora as Qformer_lora
+# from Qformer_lora import lora 
+
 
 logger = logging.get_logger(__name__)
 
@@ -303,12 +304,12 @@ class BertAttention(nn.Module):
         super().__init__()
         
         # Need to place this code when the entire model is initialized. Currently only the self module is freezed (except for the lora layers in Q, K, V)
-        if USE_LORA:
-            with lora(r=lora_r, alpha=lora_alpha, dropout=lora_dropout, enabled=True):
-                self.self = BertSelfAttention(config, is_cross_attention)
-                Qformer_lora.mark_only_lora_as_trainable(self.self)    
-        else:
-            self.self = BertSelfAttention(config, is_cross_attention)
+        # if USE_LORA:
+        #     with lora(r=lora_r, alpha=lora_alpha, dropout=lora_dropout, enabled=True):
+        #         self.self = BertSelfAttention(config, is_cross_attention)
+        #         Qformer_lora.mark_only_lora_as_trainable(self.self)    
+        # else:
+        self.self = BertSelfAttention(config, is_cross_attention)
         
         self.output = BertSelfOutput(config)
         self.pruned_heads = set()

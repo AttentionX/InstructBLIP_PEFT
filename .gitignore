@@ -154,3 +154,7 @@ debug*/
 *.gz
 
 cache/
+
+# datasets
+lavis/coco
+lavis/vg

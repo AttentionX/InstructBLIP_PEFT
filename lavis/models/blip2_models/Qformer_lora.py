@@ -48,7 +48,7 @@ import torch.nn.functional as F
 import math
 from typing import Dict, List
 
-import Qformer
+import lavis.models.blip2_models.Qformer as Qformer
 import lit_llama.model as llama
 
 from contextlib import contextmanager

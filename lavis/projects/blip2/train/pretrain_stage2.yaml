@@ -24,14 +24,14 @@ datasets:
     # build_info:
     #     images:
     #         storage: '/export/share/datasets/vision/coco/images/'          
-  vg_caption: # name of the dataset builder
-    vis_processor:
-        train:
-          name: "blip_image_train"
-          image_size: 224
-    text_processor:
-        train:
-          name: "blip_caption"
+  # vg_caption: # name of the dataset builder
+  #   vis_processor:
+  #       train:
+  #         name: "blip_image_train"
+  #         image_size: 224
+  #   text_processor:
+  #       train:
+  #         name: "blip_caption"
     # build_info:
     #     images:
     #         storage: '//export/share/datasets/vision/visual-genome/image/'
@@ -46,8 +46,8 @@ run:
 
   weight_decay: 0.05
   max_epoch: 10
-  batch_size_train: 64
-  batch_size_eval: 64
+  batch_size_train: 1
+  batch_size_eval: 1
   num_workers: 4
   warmup_steps: 2000
 
