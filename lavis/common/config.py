@@ -35,7 +35,9 @@ class Config:
         # [TODO] validate the model/dataset configuration
         # self._validate_runner_config(runner_config)
 
+        ##############################
         # Override the default configuration with user options.
+        ##############################
         self.config = OmegaConf.merge(
             runner_config, model_config, dataset_config, user_config
         )
@@ -98,6 +100,9 @@ class Config:
             builder_cls = registry.get_builder_class(dataset_name)
 
             dataset_config_type = datasets[dataset_name].get("type", "default")
+            ###########################################
+            # 여기서 default config 와 customized config 를 merge 함 !!!
+            ###########################################
             dataset_config_path = builder_cls.default_config_path(
                 type=dataset_config_type
             )

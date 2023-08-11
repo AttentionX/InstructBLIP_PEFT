@@ -92,6 +92,10 @@ class BaseDatasetBuilder:
 
     @classmethod
     def default_config_path(cls, type="default"):
+        """
+        Get Default configuration file
+        (This will be merged with customized configuration)
+        """
         return utils.get_abs_path(cls.DATASET_CONFIG_DICT[type])
 
     def _download_data(self):
