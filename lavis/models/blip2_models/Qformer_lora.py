@@ -405,7 +405,8 @@ class LoRAConfig:
     dropout: float = 0.0
 
 class BertSelfAttention(Qformer.BertSelfAttention):
-    lora_config = None
+    lora_config = LoRAConfig(r=lora_r, alpha=lora_alpha, dropout=lora_dropout)
+    
     def __init__(self, config, is_cross_attention):
         super().__init__()
         self.config = config
@@ -434,6 +435,7 @@ class BertSelfAttention(Qformer.BertSelfAttention):
             bias=True
         )
         if is_cross_attention:
+            # Key could be regular linear
             # self.key = nn.Linear(config.encoder_width, self.all_head_size)
             self.key = MergedLinear(
                 config.encoder_width,
@@ -446,6 +448,7 @@ class BertSelfAttention(Qformer.BertSelfAttention):
                 merge_weights=True,
                 bias=True
             )
+
             # self.value = nn.Linear(config.encoder_width, self.all_head_size)
             self.value = MergedLinear(
                 config.encoder_width,
@@ -459,6 +462,7 @@ class BertSelfAttention(Qformer.BertSelfAttention):
                 bias=True
             )
         else:
+            # Key could be regular linear
             # self.key = nn.Linear(config.hidden_size, self.all_head_size)
             self.key = MergedLinear(
                 config.hidden_size,
@@ -471,6 +475,7 @@ class BertSelfAttention(Qformer.BertSelfAttention):
                 merge_weights=True,
                 bias=True
             )
+            
             # self.value = nn.Linear(config.hidden_size, self.all_head_size)
             self.value = MergedLinear(
                 config.hidden_size,
@@ -543,7 +548,7 @@ class CausalSelfAttention(llama.CausalSelfAttention):
 
 
 @contextmanager
-def lora(r, alpha, dropout, enabled: bool = True):
+def lora(r=lora_r, alpha=lora_alpha, dropout=lora_dropout, enabled: bool = True):
     """Apply context manager under which you can instantiate the model with LoRA.
 
     In a nutshell the code inside this function forces to use LoRA variant of causal self-attention

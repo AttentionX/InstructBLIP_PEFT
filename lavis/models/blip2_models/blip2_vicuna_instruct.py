@@ -15,6 +15,10 @@ from lavis.common.registry import registry
 from lavis.models.blip2_models.blip2 import Blip2Base, disabled_train
 
 # Add LoRA Q-former here
+QFORMER_LORA = False
+if QFORMER_LORA:
+    import Qformer_lora
+    Qformer_lora.lora()
 
 @registry.register_model("blip2_vicuna_instruct")
 class Blip2VicunaInstruct(Blip2Base):
@@ -80,6 +84,10 @@ class Blip2VicunaInstruct(Blip2Base):
         else:
             self.Qformer.resize_token_embeddings(len(self.tokenizer))
         self.Qformer.cls = None
+        
+        # Train only the Qformer LoRA
+        # if QFORMER_LORA:
+        #     Qformer_lora.mark_only_lora_as_trainable(self.Qformer)
         
         self.llm_tokenizer = LlamaTokenizer.from_pretrained(llm_model, use_fast=False, truncation_side="left")
         self.llm_model = LlamaForCausalLM.from_pretrained(
