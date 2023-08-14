@@ -11,7 +11,7 @@ model:
 
 
 datasets:
-  coco_caption:
+  scienceqa:
     vis_processor:
         train:
           name: "blip2_image_train"
@@ -19,6 +19,14 @@ datasets:
     text_processor:
         train:
           name: "blip_caption"
+  # coco_caption:
+  #   vis_processor:
+  #       train:
+  #         name: "blip2_image_train"
+  #         image_size: 224
+  #   text_processor:
+  #       train:
+  #         name: "blip_caption"
 #     build_info:
 #         images:
 #             storage: '/export/share/datasets/vision/coco/images/'          
