@@ -52,9 +52,12 @@ class CaptionDataset(BaseDataset, __DisplMixin):
         image = self.vis_processor(image)
         caption = self.text_processor(ann["caption"])
 
+       
+
         return {
             "image": image,
             "text_input": caption,
+            "text_output" : caption,
             # "image_id": self.img_ids[ann["image_id"]],
         }
 
