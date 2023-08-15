@@ -14,6 +14,9 @@ import torch.nn as nn
 from torch.cuda.amp import autocast as autocast
 from transformers import T5TokenizerFast
 
+import transformers
+from peft import LoraConfig, get_peft_model
+
 from lavis.common.registry import registry
 from lavis.models.blip2_models.blip2 import Blip2Base, disabled_train
 from lavis.models.blip2_models.modeling_t5 import T5Config, T5ForConditionalGeneration
@@ -104,8 +107,36 @@ class Blip2T5Instruct(Blip2Base):
         )
 
         for name, param in self.t5_model.named_parameters():
-            param.requires_grad = False
+            param.requires_grad = False 
             param.data = param.data.bfloat16()
+        
+        def _find_all_linear_names(model):
+            cls = torch.nn.Linear
+            lora_module_names = set()
+            module_names = set()
+            for name, module in model.named_modules():
+                print(f"all print :{type(module)}")
+                module_names.add(name)
+                if isinstance(module, cls):
+                    print(name)
+                    names = name.split('.')
+                    lora_module_names.add('.'+names[0] if len(names) == 1 else '.'+names[-1])
+            print(f"1st val {list(module_names)}")
+            print(f"2nd val {list(lora_module_names)}")
+            # if 'lm_head' in lora_module_names: # needed for 16-bit
+            #     lora_module_names.remove('lm_head')
+            return list(lora_module_names)
+        
+        lora_config = LoraConfig(
+            r=1,
+            lora_alpha=2,
+            target_modules=_find_all_linear_names(self.t5_model),
+            # lora_dropout=training_args.lora_dropout,
+            # bias=training_args.lora_bias,
+            task_type="CAUSAL_LM",
+        )
+        self.t5_model = get_peft_model(self.t5_model, lora_config)
+        self.t5_model.print_trainable_parameters()
 
         self.t5_proj = nn.Linear(
             self.Qformer.config.hidden_size, self.t5_model.config.hidden_size
