@@ -97,6 +97,9 @@ def main():
         cfg=cfg, job_id=job_id, task=task, model=model, datasets=datasets
     )
     runner.train()
+    # runner.train() -> if runner_base -> runner.train_epoch() -> runner.task.train_epoch() : 
+    # runner.task.train_step() : output = model(sample), loss = output.loss
+    # runner.task. backprop
 
 
 if __name__ == "__main__":
