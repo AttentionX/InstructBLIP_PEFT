@@ -18,6 +18,12 @@ from lavis.common.registry import registry
 from lavis.models.blip2_models.blip2 import Blip2Base, disabled_train
 from lavis.models.blip2_models.modeling_t5 import T5Config, T5ForConditionalGeneration
 from transformers.modeling_outputs import BaseModelOutput
+import lavis.models.blip2_models.Qformer_lora as Qformer_lora 
+
+# Add LoRA Q-former here
+QFORMER_LORA = True  
+if QFORMER_LORA:
+    Qformer_lora.lora()
 
 
 @registry.register_model("blip2_t5_instruct")
@@ -85,7 +91,9 @@ class Blip2T5Instruct(Blip2Base):
         else:
             self.Qformer.resize_token_embeddings(len(self.tokenizer))
         self.Qformer.cls = None
-
+        # Train only the Qformer LoRA
+        if QFORMER_LORA:
+            Qformer_lora.mark_only_lora_as_trainable(self.Qformer)
         self.t5_tokenizer = T5TokenizerFast.from_pretrained(t5_model, truncation_side='left')
         self.t5_output_tokenizer = T5TokenizerFast.from_pretrained(t5_model, truncation_side='right')
 

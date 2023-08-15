@@ -59,7 +59,7 @@ class ScienceQADataset(BaseDataset):
             "text_output": answer_list,
         }
     
-    @staticmethod(function)    
+    @staticmethod
     def get_question(sample):
         choices = ""
         

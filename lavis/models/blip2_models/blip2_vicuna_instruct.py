@@ -15,7 +15,7 @@ from lavis.common.registry import registry
 from lavis.models.blip2_models.blip2 import Blip2Base, disabled_train
 
 # Add LoRA Q-former here
-QFORMER_LORA = False
+QFORMER_LORA = False 
 if QFORMER_LORA:
     import Qformer_lora
     Qformer_lora.lora()

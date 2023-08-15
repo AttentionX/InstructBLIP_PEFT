@@ -49,7 +49,7 @@ import math
 from typing import Dict, List
 
 import lavis.models.blip2_models.Qformer as Qformer
-import lit_llama.model as llama
+# import lit_llama.model as llama
 
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -503,48 +503,48 @@ class BertSelfAttention(Qformer.BertSelfAttention):
             )
         self.save_attention = False
 
-class CausalSelfAttention(llama.CausalSelfAttention):
-    lora_config = None
+# class CausalSelfAttention(llama.CausalSelfAttention):
+#     lora_config = None
 
-    def __init__(self, config: llama.LLaMAConfig) -> None:
-        """Causal self-attention with calculating qkv matrices with a single matrix* and Low Ranking Adaptation for
-        parameter-efficient fine-tuning.
+#     def __init__(self, config: llama.LLaMAConfig) -> None:
+#         """Causal self-attention with calculating qkv matrices with a single matrix* and Low Ranking Adaptation for
+#         parameter-efficient fine-tuning.
 
-        *Instead of creating multiple heads and concatenating the result (in addition to creating separate matrices for
-        query, key and value for each head) we can do this in a single pass with a single weight matrix.
+#         *Instead of creating multiple heads and concatenating the result (in addition to creating separate matrices for
+#         query, key and value for each head) we can do this in a single pass with a single weight matrix.
 
-        Args:
-            config: 
-                ``"block_size"``: size of the context of the model,
-                ``"vocab_size"``: number of unique tokens,
-                ``"padded_vocab_size"``: padded size of the vocabulary to the nearest multiple of 64 (leads to a greater performance),
-                ``"n_layer"``: number of transformer blocks (self-attention + MLP),
-                ``"n_head"``: number of heads in multi-head attention mechanism,
-                ``"n_embd"``: size of the embedding: vector representation of each token.
-        """
-        # Skip the parent class __init__ altogether and replace it to avoid
-        # useless allocations
-        nn.Module.__init__(self)
-        assert config.n_embd % config.n_head == 0
+#         Args:
+#             config: 
+#                 ``"block_size"``: size of the context of the model,
+#                 ``"vocab_size"``: number of unique tokens,
+#                 ``"padded_vocab_size"``: padded size of the vocabulary to the nearest multiple of 64 (leads to a greater performance),
+#                 ``"n_layer"``: number of transformer blocks (self-attention + MLP),
+#                 ``"n_head"``: number of heads in multi-head attention mechanism,
+#                 ``"n_embd"``: size of the embedding: vector representation of each token.
+#         """
+#         # Skip the parent class __init__ altogether and replace it to avoid
+#         # useless allocations
+#         nn.Module.__init__(self)
+#         assert config.n_embd % config.n_head == 0
 
-        # key, query, value projections for all heads, but in a batch
-        self.c_attn = MergedLinear(
-            in_features=config.n_embd,
-            out_features=3 * config.n_embd,
-            r=self.lora_config.r,
-            lora_alpha=self.lora_config.alpha,
-            lora_dropout=self.lora_config.dropout,
-            enable_lora=[True, False, True],
-            fan_in_fan_out = False,
-            merge_weights=True,
-            bias=False)
-        # output projection
-        self.c_proj = nn.Linear(config.n_embd, config.n_embd, bias=False)
-        # regularization
-        self.n_head = config.n_head
-        self.n_embd = config.n_embd
-        self.block_size = config.block_size
-        self.rope_cache = None
+#         # key, query, value projections for all heads, but in a batch
+#         self.c_attn = MergedLinear(
+#             in_features=config.n_embd,
+#             out_features=3 * config.n_embd,
+#             r=self.lora_config.r,
+#             lora_alpha=self.lora_config.alpha,
+#             lora_dropout=self.lora_config.dropout,
+#             enable_lora=[True, False, True],
+#             fan_in_fan_out = False,
+#             merge_weights=True,
+#             bias=False)
+#         # output projection
+#         self.c_proj = nn.Linear(config.n_embd, config.n_embd, bias=False)
+#         # regularization
+#         self.n_head = config.n_head
+#         self.n_embd = config.n_embd
+#         self.block_size = config.block_size
+#         self.rope_cache = None
 
 
 @contextmanager
