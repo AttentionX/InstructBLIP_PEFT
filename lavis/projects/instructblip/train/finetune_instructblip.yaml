@@ -19,7 +19,15 @@ datasets:
   #   text_processor:
   #       train:
   #         name: "blip_caption"
-  coco_caption:
+  # coco_caption:
+  #   vis_processor:
+  #       train:
+  #         name: "blip2_image_train"
+  #         image_size: 224
+  #   text_processor:
+  #       train:
+  #         name: "blip_caption"
+  vizwiz:
     vis_processor:
         train:
           name: "blip2_image_train"
@@ -65,6 +73,8 @@ run:
 
   evaluate: False 
   train_splits: ["train"]
+  val_splits: ["val"]
+  test_splits: ["test"]
 
   device: "cuda"
   world_size: 1

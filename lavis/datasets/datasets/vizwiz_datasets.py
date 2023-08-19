@@ -10,12 +10,15 @@ class VizWizDataset(BaseDataset):
     def __init__(self, vis_processor, text_processor, vis_root, ann_paths):
         super().__init__(vis_processor, text_processor, vis_root, ann_paths=[])
         self.annotation = []
+        print("annotation")
+        print(ann_paths)
         for ann in ann_paths:
             # self.annotation.extend(pd.read_parquet(ann))
             # self.annotation = pd.read_parquet(ann)
             self.annotation = pd.read_json(ann)
 
     def __getitem__(self, index):
+        print("vizwiz item!")
         ann = self.annotation.iloc[index]
 
         image_path = os.path.join(self.vis_root, ann["image"])

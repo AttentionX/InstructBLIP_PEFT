@@ -124,8 +124,12 @@ class BaseDatasetBuilder:
                 urls = [urls]
             if isinstance(storage_paths, str):
                 storage_paths = [storage_paths]
-
-            assert len(urls) == len(storage_paths)
+            print(urls)
+            print(storage_paths)
+            if urls is None:
+                urls = []
+            if len(urls) != len(storage_paths):
+                return 
 
             for url_or_filename, storage_path in zip(urls, storage_paths):
                 # if storage_path is relative, make it full by prefixing with cache_root.
@@ -183,6 +187,8 @@ class BaseDatasetBuilder:
         vis_info = build_info.get(self.data_type)
 
         datasets = dict()
+        print("get keys data")
+        print(ann_info.keys())
         for split in ann_info.keys():
             if split not in ["train", "val", "test"]:
                 continue
@@ -225,6 +231,9 @@ class BaseDatasetBuilder:
 
             # create datasets
             dataset_cls = self.train_dataset_cls if is_train else self.eval_dataset_cls
+            print("added")
+            print(split)
+            print(ann_paths)
             datasets[split] = dataset_cls(
                 vis_processor=vis_processor,
                 text_processor=text_processor,
