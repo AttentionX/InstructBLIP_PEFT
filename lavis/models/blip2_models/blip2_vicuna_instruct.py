@@ -10,16 +10,9 @@ from torch.cuda.amp import autocast as autocast
 import torch.nn as nn
 
 import transformers
-from peft import LoraConfig, get_peft_model
 
 from lavis.common.registry import registry
 from lavis.models.blip2_models.blip2 import Blip2Base, disabled_train
-
-# Add LoRA Q-former here
-QFORMER_LORA = False 
-if QFORMER_LORA:
-    import Qformer_lora
-    Qformer_lora.lora()
 
 @registry.register_model("blip2_vicuna_instruct")
 class Blip2VicunaInstruct(Blip2Base):
@@ -85,11 +78,7 @@ class Blip2VicunaInstruct(Blip2Base):
         else:
             self.Qformer.resize_token_embeddings(len(self.tokenizer))
         self.Qformer.cls = None
-        
-        # Train only the Qformer LoRA
-        # if QFORMER_LORA:
-        #     Qformer_lora.mark_only_lora_as_trainable(self.Qformer)
-        
+
         self.llm_tokenizer = LlamaTokenizer.from_pretrained(llm_model, use_fast=False, truncation_side="left")
         self.llm_model = LlamaForCausalLM.from_pretrained(
             llm_model, torch_dtype=torch.float16
@@ -108,29 +97,6 @@ class Blip2VicunaInstruct(Blip2Base):
 
         for name, param in self.llm_model.named_parameters():
             param.requires_grad = False
-        
-        def _find_all_linear_names(model):
-            cls = torch.nn.Linear
-            lora_module_names = set()
-            for name, module in model.named_modules():
-                if isinstance(module, cls):
-                    names = name.split('.')
-                    lora_module_names.add(names[0] if len(names) == 1 else names[-1])
-
-            # if 'lm_head' in lora_module_names: # needed for 16-bit
-            #     lora_module_names.remove('lm_head')
-            return list(lora_module_names)
-        
-        lora_config = LoraConfig(
-            r=4,
-            lora_alpha=2,
-            target_modules=_find_all_linear_names(self.llm_model),
-            # lora_dropout=training_args.lora_dropout,
-            # bias=training_args.lora_bias,
-            task_type="CAUSAL_LM",
-        )
-        self.llm_model = get_peft_model(self.llm_model, lora_config)
-        self.llm_model.print_trainable_parameters()
 
         self.llm_proj = nn.Linear(
             self.Qformer.config.hidden_size, self.llm_model.config.hidden_size
