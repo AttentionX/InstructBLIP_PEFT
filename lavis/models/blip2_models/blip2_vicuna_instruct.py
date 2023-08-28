@@ -3,6 +3,7 @@ Requires Transformer 4.28 and above, implementation may change according the Lla
 """
 import logging
 import string
+import os
 from packaging import version
 
 import torch
@@ -13,6 +14,9 @@ import transformers
 
 from lavis.common.registry import registry
 from lavis.models.blip2_models.blip2 import Blip2Base, disabled_train
+from lavis.common.utils import get_abs_path, is_url
+from lavis.common.dist_utils import download_cached_file
+
 
 @registry.register_model("blip2_vicuna_instruct")
 class Blip2VicunaInstruct(Blip2Base):
@@ -729,3 +733,58 @@ class Blip2VicunaInstruct(Blip2Base):
         model.load_checkpoint_from_config(cfg)
 
         return model
+
+    def load_from_pretrained(self, url_or_filename):
+        if is_url(url_or_filename):
+            cached_file = download_cached_file(
+                url_or_filename, check_hash=False, progress=True
+            )
+            checkpoint = torch.load(cached_file, map_location="cpu")
+        elif os.path.isfile(url_or_filename):
+            checkpoint = torch.load(url_or_filename, map_location="cpu")
+        else:
+            raise RuntimeError("checkpoint url or path is invalid")
+
+        if "model" in checkpoint:
+            state_dict = checkpoint["model"]
+        else:
+            state_dict = checkpoint
+
+        # # if name of paramter is different with the code name,
+        # # ex) bert.embeddings.word_embeddings.weight in state_dict = embeddings.word_embeddings.weight in code
+        # # we need to change the name of parameter
+        
+        # # example code from albef_vqa
+        
+        # for key in list(state_dict.keys()):
+        #     if "bert" in key:
+        #         encoder_key = key.replace("bert.", "")
+        #         state_dict[encoder_key] = state_dict[key]
+
+        #     # intialize text decoder as multimodal encoder (last 6 layers of model.text_encoder)
+        #     if "text_encoder" in key:
+        #         if "layer" in key:
+        #             encoder_keys = key.split(".")
+        #             layer_num = int(encoder_keys[4])
+
+        #             if layer_num < 6:
+        #                 del state_dict[key]
+        #                 continue
+        #             else:
+        #                 decoder_layer_num = layer_num - 6
+        #                 encoder_keys[4] = str(decoder_layer_num)
+        #                 encoder_key = ".".join(encoder_keys)
+        #         else:
+        #             encoder_key = key
+        #         decoder_key = encoder_key.replace("text_encoder", "text_decoder")
+        #         state_dict[decoder_key] = state_dict[key]
+
+        #         del state_dict[key]
+        
+        # strict=False for peft layers
+        msg = self.load_state_dict(state_dict, strict=False)
+
+        # logging.info("Missing keys {}".format(msg.missing_keys))
+        logging.info("load checkpoint from %s" % url_or_filename)
+
+        return msg

@@ -8,6 +8,7 @@ import logging
 import string
 import random
 import copy
+import os
 
 import torch
 import torch.nn as nn
@@ -18,7 +19,8 @@ from lavis.common.registry import registry
 from lavis.models.blip2_models.blip2 import Blip2Base, disabled_train
 from lavis.models.blip2_models.modeling_t5 import T5Config, T5ForConditionalGeneration
 from transformers.modeling_outputs import BaseModelOutput
-
+from lavis.common.utils import is_url
+from lavis.common.dist_utils import download_cached_file
 
 @registry.register_model("blip2_t5_instruct")
 class Blip2T5Instruct(Blip2Base):
@@ -782,3 +784,27 @@ class Blip2T5Instruct(Blip2Base):
         model.load_checkpoint_from_config(cfg)
 
         return model
+
+    def load_from_pretrained(self, url_or_filename):
+        if is_url(url_or_filename):
+            cached_file = download_cached_file(
+                url_or_filename, check_hash=False, progress=True
+            )
+            checkpoint = torch.load(cached_file, map_location="cpu")
+        elif os.path.isfile(url_or_filename):
+            checkpoint = torch.load(url_or_filename, map_location="cpu")
+        else:
+            raise RuntimeError("checkpoint url or path is invalid")
+
+        if "model" in checkpoint:
+            state_dict = checkpoint["model"]
+        else:
+            state_dict = checkpoint
+
+        # strict=False for peft layers
+        msg = self.load_state_dict(state_dict, strict=False)
+
+        # logging.info("Missing keys {}".format(msg.missing_keys))
+        logging.info("load checkpoint from %s" % url_or_filename)
+
+        return msg
