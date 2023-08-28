@@ -14,12 +14,17 @@ import transformers
 
 from lavis.common.registry import registry
 from lavis.models.blip2_models.blip2 import Blip2Base, disabled_train
-from lavis.common.utils import get_abs_path, is_url
+from lavis.common.utils import is_url
 from lavis.common.dist_utils import download_cached_file
 
+# Add LoRA Q-former here
+QFORMER_LORA = False 
+if QFORMER_LORA:
+    import Qformer_lora
+    Qformer_lora.lora()
 
-@registry.register_model("blip2_vicuna_instruct")
-class Blip2VicunaInstruct(Blip2Base):
+@registry.register_model("blip2_vicuna_instruct_qformer_lora")
+class Blip2VicunaInstructQformerLoRA(Blip2Base):
     """
     BLIP2 Vicuna model.
     Supported model types:
@@ -31,8 +36,8 @@ class Blip2VicunaInstruct(Blip2Base):
     """
 
     PRETRAINED_MODEL_CONFIG_DICT = {
-        "vicuna7b": "configs/models/blip2/blip2_instruct_vicuna7b.yaml",
-        "vicuna13b": "configs/models/blip2/blip2_instruct_vicuna13b.yaml",
+        "vicuna7b": "configs/models/blip2/blip2_instruct_vicuna7b_qformer_lora.yaml",
+        "vicuna13b": "configs/models/blip2/blip2_instruct_vicuna13b_qformer_lora.yaml",
     }
 
     def __init__(
@@ -82,7 +87,11 @@ class Blip2VicunaInstruct(Blip2Base):
         else:
             self.Qformer.resize_token_embeddings(len(self.tokenizer))
         self.Qformer.cls = None
-
+        
+        # Train only the Qformer LoRA
+        # if QFORMER_LORA:
+        #     Qformer_lora.mark_only_lora_as_trainable(self.Qformer)
+        
         self.llm_tokenizer = LlamaTokenizer.from_pretrained(llm_model, use_fast=False, truncation_side="left")
         self.llm_model = LlamaForCausalLM.from_pretrained(
             llm_model, torch_dtype=torch.float16
@@ -101,7 +110,7 @@ class Blip2VicunaInstruct(Blip2Base):
 
         for name, param in self.llm_model.named_parameters():
             param.requires_grad = False
-
+            
         self.llm_proj = nn.Linear(
             self.Qformer.config.hidden_size, self.llm_model.config.hidden_size
         )
@@ -750,37 +759,6 @@ class Blip2VicunaInstruct(Blip2Base):
         else:
             state_dict = checkpoint
 
-        # # if name of paramter is different with the code name,
-        # # ex) bert.embeddings.word_embeddings.weight in state_dict = embeddings.word_embeddings.weight in code
-        # # we need to change the name of parameter
-        
-        # # example code from albef_vqa
-        
-        # for key in list(state_dict.keys()):
-        #     if "bert" in key:
-        #         encoder_key = key.replace("bert.", "")
-        #         state_dict[encoder_key] = state_dict[key]
-
-        #     # intialize text decoder as multimodal encoder (last 6 layers of model.text_encoder)
-        #     if "text_encoder" in key:
-        #         if "layer" in key:
-        #             encoder_keys = key.split(".")
-        #             layer_num = int(encoder_keys[4])
-
-        #             if layer_num < 6:
-        #                 del state_dict[key]
-        #                 continue
-        #             else:
-        #                 decoder_layer_num = layer_num - 6
-        #                 encoder_keys[4] = str(decoder_layer_num)
-        #                 encoder_key = ".".join(encoder_keys)
-        #         else:
-        #             encoder_key = key
-        #         decoder_key = encoder_key.replace("text_encoder", "text_decoder")
-        #         state_dict[decoder_key] = state_dict[key]
-
-        #         del state_dict[key]
-        
         # strict=False for peft layers
         msg = self.load_state_dict(state_dict, strict=False)
 

@@ -8,26 +8,19 @@ import logging
 import string
 import random
 import copy
+import os
 
 import torch
 import torch.nn as nn
 from torch.cuda.amp import autocast as autocast
 from transformers import T5TokenizerFast
 
-import transformers
-from peft import LoraConfig, get_peft_model
-
 from lavis.common.registry import registry
 from lavis.models.blip2_models.blip2 import Blip2Base, disabled_train
 from lavis.models.blip2_models.modeling_t5 import T5Config, T5ForConditionalGeneration
 from transformers.modeling_outputs import BaseModelOutput
-import lavis.models.blip2_models.Qformer_lora as Qformer_lora 
-
-# Add LoRA Q-former here
-QFORMER_LORA = True  
-if QFORMER_LORA:
-    Qformer_lora.lora()
-
+from lavis.common.utils import is_url
+from lavis.common.dist_utils import download_cached_file
 
 @registry.register_model("blip2_t5_instruct")
 class Blip2T5Instruct(Blip2Base):
@@ -94,9 +87,7 @@ class Blip2T5Instruct(Blip2Base):
         else:
             self.Qformer.resize_token_embeddings(len(self.tokenizer))
         self.Qformer.cls = None
-        # Train only the Qformer LoRA
-        if QFORMER_LORA:
-            Qformer_lora.mark_only_lora_as_trainable(self.Qformer)
+
         self.t5_tokenizer = T5TokenizerFast.from_pretrained(t5_model, truncation_side='left')
         self.t5_output_tokenizer = T5TokenizerFast.from_pretrained(t5_model, truncation_side='right')
 
@@ -107,36 +98,8 @@ class Blip2T5Instruct(Blip2Base):
         )
 
         for name, param in self.t5_model.named_parameters():
-            param.requires_grad = False 
+            param.requires_grad = False
             param.data = param.data.bfloat16()
-        
-        def _find_all_linear_names(model):
-            cls = torch.nn.Linear
-            lora_module_names = set()
-            module_names = set()
-            for name, module in model.named_modules():
-                print(f"all print :{type(module)}")
-                module_names.add(name)
-                if isinstance(module, cls):
-                    print(name)
-                    names = name.split('.')
-                    lora_module_names.add('.'+names[0] if len(names) == 1 else '.'+names[-1])
-            print(f"1st val {list(module_names)}")
-            print(f"2nd val {list(lora_module_names)}")
-            # if 'lm_head' in lora_module_names: # needed for 16-bit
-            #     lora_module_names.remove('lm_head')
-            return list(lora_module_names)
-        
-        lora_config = LoraConfig(
-            r=1,
-            lora_alpha=2,
-            target_modules=_find_all_linear_names(self.t5_model),
-            # lora_dropout=training_args.lora_dropout,
-            # bias=training_args.lora_bias,
-            task_type="CAUSAL_LM",
-        )
-        self.t5_model = get_peft_model(self.t5_model, lora_config)
-        self.t5_model.print_trainable_parameters()
 
         self.t5_proj = nn.Linear(
             self.Qformer.config.hidden_size, self.t5_model.config.hidden_size
@@ -821,3 +784,27 @@ class Blip2T5Instruct(Blip2Base):
         model.load_checkpoint_from_config(cfg)
 
         return model
+
+    def load_from_pretrained(self, url_or_filename):
+        if is_url(url_or_filename):
+            cached_file = download_cached_file(
+                url_or_filename, check_hash=False, progress=True
+            )
+            checkpoint = torch.load(cached_file, map_location="cpu")
+        elif os.path.isfile(url_or_filename):
+            checkpoint = torch.load(url_or_filename, map_location="cpu")
+        else:
+            raise RuntimeError("checkpoint url or path is invalid")
+
+        if "model" in checkpoint:
+            state_dict = checkpoint["model"]
+        else:
+            state_dict = checkpoint
+
+        # strict=False for peft layers
+        msg = self.load_state_dict(state_dict, strict=False)
+
+        # logging.info("Missing keys {}".format(msg.missing_keys))
+        logging.info("load checkpoint from %s" % url_or_filename)
+
+        return msg
