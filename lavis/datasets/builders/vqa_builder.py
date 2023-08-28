@@ -13,7 +13,7 @@ from lavis.datasets.datasets.coco_vqa_datasets import COCOVQADataset, COCOVQAEva
 from lavis.datasets.datasets.vg_vqa_datasets import VGVQADataset
 from lavis.datasets.datasets.gqa_datasets import GQADataset, GQAEvalDataset
 from lavis.datasets.datasets.scienceqa_datasets import ScienceQADataset
-from lavis.datasets.datasets.vizwiz_datasets import VizWizDataset
+from lavis.datasets.datasets.vizwiz_datasets import VizWizDataset, VizWizEvalDataset
 
 
 @registry.register_builder("coco_vqa")
@@ -71,7 +71,7 @@ class ScienceQABuilder(BaseDatasetBuilder):
 @registry.register_builder("vizwiz")
 class VizWizBuilder(BaseDatasetBuilder):
     train_dataset_cls = VizWizDataset
-    eval_dataset_cls = VizWizDataset
+    eval_dataset_cls = VizWizEvalDataset
     
     DATASET_CONFIG_DICT = {
         "default": "configs/datasets/vizwiz/defaults.yaml",

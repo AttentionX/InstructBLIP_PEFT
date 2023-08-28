@@ -14,6 +14,9 @@ import torch.nn as nn
 from torch.cuda.amp import autocast as autocast
 from transformers import T5TokenizerFast
 
+import transformers
+from peft import LoraConfig, get_peft_model
+
 from lavis.common.registry import registry
 from lavis.models.blip2_models.blip2 import Blip2Base, disabled_train
 from lavis.models.blip2_models.modeling_t5 import T5Config, T5ForConditionalGeneration
@@ -104,8 +107,9 @@ class Blip2T5Instruct(Blip2Base):
         )
 
         for name, param in self.t5_model.named_parameters():
-            param.requires_grad = False
+            param.requires_grad = False 
             param.data = param.data.bfloat16()
+
 
         self.t5_proj = nn.Linear(
             self.Qformer.config.hidden_size, self.t5_model.config.hidden_size

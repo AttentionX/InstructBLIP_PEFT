@@ -26,6 +26,7 @@ class COCOCapEvalDataset(CaptionEvalDataset):
         split (string): val or test
         """
         super().__init__(vis_processor, text_processor, vis_root, ann_paths)
+        self.text_processor = text_processor
 
     def __getitem__(self, index):
         ann = self.annotation[index]
@@ -36,11 +37,22 @@ class COCOCapEvalDataset(CaptionEvalDataset):
         image = self.vis_processor(image)
 
         img_id = ann["image"].split("/")[-1].strip(".jpg").split("_")[-1]
-
+        print(ann["caption"])
+        caption = self.text_processor(ann["caption"])
+        print("eval data")
+        print({
+            "image": image,
+            "image_id": img_id,
+            "instance_id": ann["instance_id"],
+            "text_input": caption,
+            "text_output" : caption,
+        })
         return {
             "image": image,
             "image_id": img_id,
             "instance_id": ann["instance_id"],
+            "text_input": caption,
+            "text_output" : caption,
         }
 
 

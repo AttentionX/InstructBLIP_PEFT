@@ -1,29 +1,74 @@
 import os
+import json
 import pandas as pd
 from PIL import Image
 import torch
 
 from lavis.datasets.datasets.base_dataset import BaseDataset
 
+from lavis.datasets.datasets.vqa_datasets import VQADataset, VQAEvalDataset
+from collections import OrderedDict
 
+class __DisplMixin:
+    def displ_item(self, index):
+        sample, ann = self.__getitem__(index), self.annotation[index]
+
+        return OrderedDict(
+            {
+                "file": ann["image"],
+                "question": ann["question"],
+                "question_id": ann["question_id"],
+                "answers": "; ".join(ann["answer"]),
+                "image": sample["image"],
+            }
+        )
+# class VizWizDataset(BaseDataset):
+#     def __init__(self, vis_processor, text_processor, vis_root, ann_paths):
+#         super().__init__(vis_processor, text_processor, vis_root, ann_paths=[])
+#         self.annotation = []
+#         print("annotation")
+#         print(ann_paths)
+#         for ann in ann_paths:
+#             # self.annotation.extend(pd.read_parquet(ann))
+#             # self.annotation = pd.read_parquet(ann)
+#             self.annotation = pd.read_json(ann)
+
+#     def __getitem__(self, index):
+#         print("vizwiz item!")
+#         ann = self.annotation.iloc[index]
+
+#         image_path = os.path.join(self.vis_root, ann["image"])
+#         image = Image.open(image_path).convert("RGB")
+
+#         image = self.vis_processor(image)
+
+#         instruction = f'<Image> Question: {ann["question"]} Short answer:'
+        
+#         instruction = self.text_processor(instruction)
+
+#         answer = ann["answers"][0]["answer"] # 0~9
+
+#         return {
+#             "image": image,
+#             "text_input": instruction,
+#             "text_output" : answer,
+#         }
+    
+    
 class VizWizDataset(BaseDataset):
     def __init__(self, vis_processor, text_processor, vis_root, ann_paths):
         super().__init__(vis_processor, text_processor, vis_root, ann_paths=[])
         self.annotation = []
-        print("annotation")
-        print(ann_paths)
         for ann in ann_paths:
             # self.annotation.extend(pd.read_parquet(ann))
             # self.annotation = pd.read_parquet(ann)
             self.annotation = pd.read_json(ann)
 
     def __getitem__(self, index):
-        print("vizwiz item!")
         ann = self.annotation.iloc[index]
 
         image_path = os.path.join(self.vis_root, ann["image"])
         image = Image.open(image_path).convert("RGB")
-
         image = self.vis_processor(image)
 
         instruction = f'<Image> Question: {ann["question"]} Short answer:'
@@ -38,34 +83,52 @@ class VizWizDataset(BaseDataset):
             "text_output" : answer,
         }
     
-    
-class VizWizDataset(BaseDataset):
+
+
+class VizWizEvalDataset(VQAEvalDataset, __DisplMixin):
     def __init__(self, vis_processor, text_processor, vis_root, ann_paths):
-        super().__init__(vis_processor, text_processor, vis_root, ann_paths=[])
-        self.annotation = []
+        """
+        vis_root (string): Root directory of images 
+        ann_root (string): directory to store the annotation file
+        """
+
+        self.vis_root = vis_root
+
+        self.annotation = [] 
         for ann in ann_paths:
-            # self.annotation.extend(pd.read_parquet(ann))
-            # self.annotation = pd.read_parquet(ann)
-            self.annotation = pd.read_json(ann)
+            self.annotation.extend(json.load(open(ann)))
+
+        ## TODO: support inference method == 'ranking'
+        answer_list_path = ann_paths[0] if len(ann_paths) > 0 else ''
+        if os.path.exists(answer_list_path):
+            self.answer_list = json.load(open(answer_list_path))
+        else:
+            print("None!!")
+            self.answer_list = None
+
+        self.vis_processor = vis_processor
+        self.text_processor = text_processor
+
+        self._add_instance_ids()
 
     def __getitem__(self, index):
-        ann = self.annotation.iloc[index]
+        ann = self.annotation[index]
 
         image_path = os.path.join(self.vis_root, ann["image"])
         image = Image.open(image_path).convert("RGB")
 
         image = self.vis_processor(image)
+        question = self.text_processor(ann["question"])
 
-        instruction = f'<Image> Question: {ann["question"]} Short answer:'
-        
-        instruction = self.text_processor(instruction)
-
-        answer = ann["answers"][0]["answer"] # 0~9
+        if "answers" in ann.keys(): 
+            answer = ann["answers"]
+        else:
+            answer = [""]
 
         return {
             "image": image,
-            "text_input": instruction,
-            "text_output" : answer,
+            "image_name" : ann["image"],
+            "text_input": question,
+            "answer": answer,
+            "question_id": ann["instance_id"]
         }
-    
-    
