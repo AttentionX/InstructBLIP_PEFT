@@ -31,8 +31,8 @@ if QFORMER_LORA:
     Qformer_lora.lora()
 
 
-@registry.register_model("blip2_t5_instruct_lora")
-class Blip2T5InstructLoRA(Blip2Base):
+@registry.register_model("blip2_t5_instruct_qformer_lora")
+class Blip2T5InstructQformerLoRA(Blip2Base):
     """
     BLIP2 T5 model.
     Supported model types:
@@ -44,8 +44,8 @@ class Blip2T5InstructLoRA(Blip2Base):
     """
 
     PRETRAINED_MODEL_CONFIG_DICT = {
-        "flant5xl": "configs/models/blip2/blip2_instruct_flant5xl.yaml",
-        "flant5xxl": "configs/models/blip2/blip2_instruct_flant5xxl.yaml",
+        "flant5xl": "configs/models/blip2/blip2_instruct_flant5xl_qformer_lora.yaml",
+        "flant5xxl": "configs/models/blip2/blip2_instruct_flant5xxl_qformer_lora.yaml",
     }
 
     def __init__(

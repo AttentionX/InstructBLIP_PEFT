@@ -23,8 +23,8 @@ if QFORMER_LORA:
     import Qformer_lora
     Qformer_lora.lora()
 
-@registry.register_model("blip2_vicuna_instruct_lora")
-class Blip2VicunaInstructLoRA(Blip2Base):
+@registry.register_model("blip2_vicuna_instruct_qformer_lora")
+class Blip2VicunaInstructQformerLoRA(Blip2Base):
     """
     BLIP2 Vicuna model.
     Supported model types:
@@ -36,8 +36,8 @@ class Blip2VicunaInstructLoRA(Blip2Base):
     """
 
     PRETRAINED_MODEL_CONFIG_DICT = {
-        "vicuna7b": "configs/models/blip2/blip2_instruct_vicuna7b_lora.yaml",
-        "vicuna13b": "configs/models/blip2/blip2_instruct_vicuna13b_lora.yaml",
+        "vicuna7b": "configs/models/blip2/blip2_instruct_vicuna7b_qformer_lora.yaml",
+        "vicuna13b": "configs/models/blip2/blip2_instruct_vicuna13b_qformer_lora.yaml",
     }
 
     def __init__(

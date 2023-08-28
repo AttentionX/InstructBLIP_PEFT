@@ -45,8 +45,8 @@ class Blip2T5InstructLoRA(Blip2Base):
     """
 
     PRETRAINED_MODEL_CONFIG_DICT = {
-        "flant5xl": "configs/models/blip2/blip2_instruct_flant5xl.yaml",
-        "flant5xxl": "configs/models/blip2/blip2_instruct_flant5xxl.yaml",
+        "flant5xl": "configs/models/blip2/blip2_instruct_flant5xl_lora.yaml",
+        "flant5xxl": "configs/models/blip2/blip2_instruct_flant5xxl_lora.yaml",
     }
 
     def __init__(

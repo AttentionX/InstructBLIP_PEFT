@@ -41,6 +41,8 @@ from lavis.models.blip2_models.blip2_t5_instruct import Blip2T5Instruct
 from lavis.models.blip2_models.blip2_vicuna_instruct import Blip2VicunaInstruct
 from lavis.models.blip2_models.blip2_t5_instruct_lora import Blip2T5InstructLoRA
 from lavis.models.blip2_models.blip2_vicuna_instruct_lora import Blip2VicunaInstructLoRA
+from lavis.models.blip2_models.blip2_t5_instruct_qformer_lora import Blip2T5InstructQformerLoRA
+from lavis.models.blip2_models.blip2_vicuna_instruct_qformer_lora import Blip2VicunaInstructQformerLoRA
 
 from lavis.models.blip_diffusion_models.blip_diffusion import BlipDiffusion
 
@@ -86,6 +88,8 @@ __all__ = [
     "Blip2VicunaInstruct",
     "Blip2T5InstructLoRA",
     "Blip2VicunaInstructLoRA",
+    "Blip2T5InstructQformerLoRA",
+    "Blip2VicunaInstructQformerLoRA",
     "PNPVQA",
     "Img2PromptVQA",
     "PNPUnifiedQAv2FiD",
