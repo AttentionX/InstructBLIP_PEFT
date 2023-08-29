@@ -32,20 +32,32 @@ datasets:
   #         name: "blip_caption"
   #       eval:
   #         name: "blip_caption"
-
-  vizwiz:
+  iconqa:
     vis_processor:
-        train:
-          name: "blip2_image_train"
-          image_size: 224
-        eval: 
-          name: "blip_image_eval"
-          image_size: 224 
+      train:
+        name: "blip2_image_train"
+        image_size: 224
+      eval: 
+        name: "blip_image_eval"
+        image_size: 224 
     text_processor:
-        train:
-          name: "blip_question"
-        eval:
-          name: "blip_question"
+      train:
+        name: "blip_question"
+      eval:
+        name: "blip_question"
+#   vizwiz:
+#     vis_processor:
+#         train:
+#           name: "blip2_image_train"
+#           image_size: 224
+#         eval: 
+#           name: "blip_image_eval"
+#           image_size: 224 
+#     text_processor:
+#         train:
+#           name: "blip_question"
+#         eval:
+#           name: "blip_question"
 #     build_info:
 #         images:
 #             storage: '/export/share/datasets/vision/coco/images/'          
@@ -62,7 +74,7 @@ datasets:
 #             storage: '//export/share/datasets/vision/visual-genome/image/'
 
 run:
-  task: vizwiz
+  task: iconqa
   # optimizer
   lr_sched: "linear_warmup_cosine_lr"
   init_lr: 1e-4
