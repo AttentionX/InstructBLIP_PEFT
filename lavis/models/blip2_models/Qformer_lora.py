@@ -563,6 +563,24 @@ class BertSelfOutput(Qformer.BertSelfOutput):
         )
         self.LayerNorm = nn.LayerNorm(config.hidden_size, eps=config.layer_norm_eps)
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
+        
+class BertOutput(Qformer.BertOutput):
+    def __init__(self, config):
+        super().__init__()
+        # self.dense = nn.Linear(config.intermediate_size, config.hidden_size)
+        self.dense = MergedLinear(
+            config.intermediate_size,
+            config.hidden_size,
+            r=lora_r,
+            lora_alpha=lora_alpha,
+            lora_dropout=lora_dropout,
+            enable_lora=[True],
+            fan_in_fan_out = False,
+            merge_weights=True,
+            bias=True
+        )
+        self.LayerNorm = nn.LayerNorm(config.hidden_size, eps=config.layer_norm_eps)
+        self.dropout = nn.Dropout(config.hidden_dropout_prob)
 
 @contextmanager
 def lora(r=lora_r, alpha=lora_alpha, dropout=lora_dropout, enabled: bool = True):

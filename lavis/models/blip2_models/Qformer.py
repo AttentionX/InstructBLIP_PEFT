@@ -57,6 +57,10 @@ lora_r = 8
 lora_alpha = 16
 lora_dropout = 0.05
 
+if USE_LORA:
+    # Choose from BERT Self-Attention, Bert Self-Output, Bert-Output to use LoRA
+    pass
+
 
 class BertEmbeddings(nn.Module):
     """Construct the embeddings from word and position embeddings."""
