@@ -101,7 +101,7 @@ class ScienceQADataset(BaseDataset):
     def get_text_input(sample):
         choices = ""
         
-        i = 1
+        i = 0
         for choice in sample["choices"]:
             choices += f"{i}. {choice}\n"
             i += 1
@@ -167,7 +167,7 @@ class ScienceQAEvalDataset(VQAEvalDataset, __DisplMixin):
     def get_text_input(sample):
         choices = ""
         
-        i = 1
+        i = 0
         for choice in sample["choices"]:
             choices += f"{i}. {choice}\n"
             i += 1
