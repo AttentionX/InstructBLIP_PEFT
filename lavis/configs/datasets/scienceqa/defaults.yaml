@@ -8,7 +8,14 @@ datasets:
       annotations:
         train:
           storage: scienceqa/annotations/scienceqa_train.json
+        val:
+          storage: scienceqa/annotations/scienceqa_val.json
         test:
-          storage: scienceqa/annotations/scienceqa_val_eval.json
+          storage: scienceqa/annotations/scienceqa_test.json
       images:
-          storage: scienceqa/images/
+        train:
+          storage: scienceqa_instruct/images/
+        val:
+          storage: scienceqa_instruct/images/
+        test:
+          storage: scienceqa_instruct/images/

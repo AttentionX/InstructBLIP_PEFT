@@ -312,3 +312,4 @@ class AOKVQATask(VQATask):
             json.dump(result_leaderboard, f)
 
         logging.info(f"Saved results for leaderboard evaluation at {result_file}")
+

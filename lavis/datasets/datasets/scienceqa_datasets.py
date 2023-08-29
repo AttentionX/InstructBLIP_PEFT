@@ -9,10 +9,27 @@ import os
 import pandas as pd
 from PIL import Image
 import torch
+import json
 
 from lavis.datasets.datasets.base_dataset import BaseDataset
+from lavis.datasets.datasets.vqa_datasets import VQADataset, VQAEvalDataset
+from collections import OrderedDict
 
 
+class __DisplMixin:
+    def displ_item(self, index):
+        sample, ann = self.__getitem__(index), self.annotation[index]
+
+        return OrderedDict(
+            {
+                "file": ann["image"],
+                "question": ann["question"],
+                "question_id": ann["question_id"],
+                "answers": "; ".join(ann["answer"]),
+                "image": sample["image"],
+            }
+        )
+        
 class ScienceQADataset(BaseDataset):
     def __init__(self, vis_processor, text_processor, vis_root, ann_paths):
         super().__init__(vis_processor, text_processor, vis_root, ann_paths=[])
@@ -30,16 +47,18 @@ class ScienceQADataset(BaseDataset):
 
         image = self.vis_processor(image)
         
-        question = self.get_question(ann)
+        # question = self.get_question(ann)
+        # question = self.text_processor(question)
         
-        question = self.text_processor(question)
+        text_input = self.get_text_input(ann)
+        text_input = self.text_processor(text_input)
 
-        answers = [ann["answer"]]
+        answer = ann["answer"]
 
         return {
             "image": image,
-            "text_input": question,
-            "text_output" : answers,
+            "text_input": text_input,
+            "text_output" : answer,
         }
         
     def collater(self, samples):
@@ -77,3 +96,82 @@ class ScienceQADataset(BaseDataset):
         Answer with a single number only.
         """
         return question
+    
+    @staticmethod
+    def get_text_input(sample):
+        choices = ""
+        
+        i = 1
+        for choice in sample["choices"]:
+            choices += f"{i}. {choice}\n"
+            i += 1
+        
+        text_input = f"""Context: {sample['context']} Question: {sample['question']} Options: {choices}. Answer:"""
+        
+        return text_input
+        
+class ScienceQAEvalDataset(VQAEvalDataset, __DisplMixin):
+    def __init__(self, vis_processor, text_processor, vis_root, ann_paths):
+        """
+        vis_root (string): Root directory of images 
+        ann_root (string): directory to store the annotation file
+        """
+
+        self.vis_root = vis_root
+
+        self.annotation = []
+        for ann in ann_paths:
+            # self.annotation.extend(pd.read_parquet(ann))
+            self.annotation = pd.read_parquet(ann)
+        
+
+        ## TODO: support inference method == 'ranking'
+        answer_list_path = ann_paths[0] if len(ann_paths) > 0 else ''
+        if os.path.exists(answer_list_path):
+            self.answer_list = json.load(open(answer_list_path))
+        else:
+            print("None!!")
+            self.answer_list = None
+
+        self.vis_processor = vis_processor
+        self.text_processor = text_processor
+
+        self._add_instance_ids()
+
+    def __getitem__(self, index):
+        ann = self.annotation.iloc[index]
+
+        image_path = os.path.join(self.vis_root, ann["image"])
+        image = Image.open(image_path).convert("RGB")
+
+        image = self.vis_processor(image)
+        
+        # question = self.get_question(ann)
+        # question = self.text_processor(question)
+        
+        text_input = self.get_text_input(ann)
+        text_input = self.text_processor(text_input)
+        if "answer" in ann.keys(): 
+            answer = ann["answer"]
+        else:
+            answer = ""
+            
+        return {
+            "image": image,
+            "text_input": text_input,
+            "text_output" : answer,
+            "question_id": ann["instance_id"]
+        }
+    
+    @staticmethod
+    def get_text_input(sample):
+        choices = ""
+        
+        i = 1
+        for choice in sample["choices"]:
+            choices += f"{i}. {choice}\n"
+            i += 1
+        
+        text_input = f"""Context: {sample['context']} Question: {sample['question']} Options: {choices}. Answer:"""
+        
+        return text_input
