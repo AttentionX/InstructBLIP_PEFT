@@ -17,7 +17,9 @@ from lavis.datasets.datasets.video_caption_datasets import (
     VideoCaptionDataset,
     VideoCaptionEvalDataset,
 )
-
+from lavis.datasets.datasets.flickr_datasets import (
+    FlickrDataset,
+)
 
 @registry.register_builder("coco_caption")
 class COCOCapBuilder(BaseDatasetBuilder):
@@ -65,4 +67,14 @@ class VATEXCapBuilder(BaseDatasetBuilder):
 
     DATASET_CONFIG_DICT = {
         "default": "configs/datasets/vatex/defaults_cap.yaml",
+    }
+
+    
+@registry.register_builder("flickr")
+class FlickrBuilder(BaseDatasetBuilder):
+    train_dataset_cls = FlickrDataset
+    eval_dataset_cls = FlickrDataset
+
+    DATASET_CONFIG_DICT = {
+        "default": "configs/datasets/flickr30k/defaults.yaml",
     }
