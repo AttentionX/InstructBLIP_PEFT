@@ -36,7 +36,7 @@ class ScienceQADataset(BaseDataset):
         self.annotation = []
         for ann in ann_paths:
             # self.annotation.extend(pd.read_parquet(ann))
-            self.annotation = pd.read_parquet(ann)
+            self.annotation = pd.read_json(ann)
         
 
     def __getitem__(self, index):
@@ -111,6 +111,8 @@ class ScienceQADataset(BaseDataset):
         return text_input
         
 class ScienceQAEvalDataset(VQAEvalDataset, __DisplMixin):
+    # scienceQA's test annotation is same as train annotation
+    # So this class might not be necessary
     def __init__(self, vis_processor, text_processor, vis_root, ann_paths):
         """
         vis_root (string): Root directory of images 
@@ -122,7 +124,8 @@ class ScienceQAEvalDataset(VQAEvalDataset, __DisplMixin):
         self.annotation = []
         for ann in ann_paths:
             # self.annotation.extend(pd.read_parquet(ann))
-            self.annotation = pd.read_parquet(ann)
+            # to use self._add_instance_ids(), we need to use json.load
+            self.annotation.extend(json.load(open(ann)))
         
 
         ## TODO: support inference method == 'ranking'
