@@ -351,10 +351,11 @@ class ScienceQATask(VQATask):
         pred_qa_pairs = []
 
         question_id = samples["question_id"]
+        gt_answers = samples["answer"]
         # img_names = samples["image_name"]
-        for answer, id in zip(answers, question_id):
+        for pred_answer, ques_id, gt_answer in zip(answers, question_id, gt_answers):
             # ques_id = int(ques_id)
-            pred_qa_pairs.append({"question_id": id, "answer": answer})
+            pred_qa_pairs.append({"question_id": ques_id, "pred_ans": pred_answer, "gt_ans": gt_answer})
 
         return pred_qa_pairs
 
@@ -362,7 +363,7 @@ class ScienceQATask(VQATask):
         result_file = self.save_result(
             val_result,
             result_dir=registry.get_path("result_dir"),
-            filename=f"{split_name}_vqa_result",
+            filename=f"{split_name}_scienceqa_result",
             remove_duplicate="",
         )
         if split_name == 'val':
@@ -371,42 +372,36 @@ class ScienceQATask(VQATask):
             metrics = None 
         return metrics
 
-    # @dist_utils.main_process
-    # def _report_metrics(self, result_file, split):
-    #     """
-    #     Use official VQA evaluation script to report metrics.
-    #     """
-    #     metrics = {}
+    @dist_utils.main_process
+    def _report_metrics(self, result_file, split):
+        # scienceQA metric is easy
+        # just check if the predicted answer is the ground truth answer
 
+        results = json.load(open(result_file, "r"))
+        acc = []
 
-    #     annFile = "lavis/vizwiz/annotations/" + split + ".json"
-    #     vqa = VQA_Vizwiz(annFile)
-    #     vqa_result = VQA_Vizwiz(result_file)
+        for res in results:
+            # if res["gt_ans"] is None:
+            #     # prepare test results for leaderboard evaluation
+            #     self._save_result_leaderboard(results)
+            #     return
 
-    #     # create vqaEval object by taking vqa and vqaRes
-    #     # n is precision of accuracy (number of places after decimal), default is 2
-    #     vqa_scorer = VQAEval_Vizwiz(vqa, vqa_result, n=2)
-    #     logging.info("Start VQA Vizwiz evaluation.")
-    #     vqa_scorer.evaluate()
+            pred = res["pred_ans"]
+            gt_ans = res["gt_ans"]
 
-    #     # print accuracies
-    #     overall_acc = vqa_scorer.accuracy["overall"]
-    #     metrics["agg_metrics"] = overall_acc
+            num_match = sum([pred == gt for gt in gt_ans])
+            vqa_acc = min(1.0, num_match / 3.0)
 
-    #     logging.info("Overall Accuracy is: %.02f\n" % overall_acc)
-    #     logging.info("Per Answer Type Accuracy is the following:")
+            acc.append(vqa_acc)
 
-    #     for ans_type in vqa_scorer.accuracy["perAnswerType"]:
-    #         logging.info(
-    #             "%s : %.02f"
-    #             % (ans_type, vqa_scorer.accuracy["perAnswerType"][ans_type])
-    #         )
-    #         metrics[ans_type] = vqa_scorer.accuracy["perAnswerType"][ans_type]
+        accuracy = sum(acc) / len(acc) * 100
+        metrics = {"agg_metrics": accuracy, "acc": accuracy}
 
-    #     with open(
-    #         os.path.join(registry.get_path("output_dir"), "evaluate.txt"), "a"
-    #     ) as f:
-    #         print(f"wrote result on {f}")
-    #         f.write(json.dumps(metrics) + "\n")
+        with open(
+            os.path.join(registry.get_path("output_dir"), f"scienceqa/{split}/evaluate.txt"), "a"
+        ) as f:
+            f.write(json.dumps(metrics) + "\n")
 
-    #     return metrics
+        logging.info(metrics)
+
+        return metrics
