@@ -1,5 +1,5 @@
 datasets:
-  ok_vqa:
+  scienceqa:
     # data_dir: ${env.data_dir}/datasets
     data_type: images # [images|videos|features]
 
@@ -14,8 +14,8 @@ datasets:
           storage: scienceqa/annotations/scienceqa_test.json
       images:
         train:
-          storage: scienceqa_instruct/images/
+          storage: scienceqa/images/
         val:
-          storage: scienceqa_instruct/images/
+          storage: scienceqa/images/
         test:
-          storage: scienceqa_instruct/images/
+          storage: scienceqa/images/
