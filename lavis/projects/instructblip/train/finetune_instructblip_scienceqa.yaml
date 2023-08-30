@@ -53,6 +53,9 @@ run:
   num_workers: 4
   warmup_steps: 5000
 
+  # inference-specific
+  inference_method: "rank"
+
   seed: 42
   output_dir: "output/InstructBLIP/finetune_sceinceqa"
 

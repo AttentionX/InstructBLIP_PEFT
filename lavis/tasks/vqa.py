@@ -313,3 +313,100 @@ class AOKVQATask(VQATask):
 
         logging.info(f"Saved results for leaderboard evaluation at {result_file}")
 
+
+@registry.register_task("scienceqa")
+class ScienceQATask(VQATask):
+
+    def build_datasets(self, cfg):
+        datasets = super().build_datasets(cfg)
+
+        # get question file, annotation file and anwser list in COCO format
+        for dataset in datasets.values():
+            for split in dataset:
+                try:
+                    self.answer_list = dataset[split].answer_list
+                except AttributeError:
+                    # if answer_list is not provided, then set it to None
+                    pass
+
+        if len(self.ques_files) > 0:
+            assert len(self.ques_files) == len(
+                self.anno_files
+            ), "Only support one split for evaluation."
+
+        return datasets
+
+    def valid_step(self, model, samples):
+        # make predicted answers
+        answers = model.predict_answers(
+            samples=samples,
+            answer_list=self.answer_list,
+            inference_method=self.inference_method,
+            num_beams=self.num_beams,
+            max_len=self.max_len,
+            min_len=self.min_len,
+            num_ans_candidates=self.num_ans_candidates,
+            prompt=self.prompt,
+        )
+        pred_qa_pairs = []
+
+        question_id = samples["question_id"]
+        # img_names = samples["image_name"]
+        for answer, id in zip(answers, question_id):
+            # ques_id = int(ques_id)
+            pred_qa_pairs.append({"question_id": id, "answer": answer})
+
+        return pred_qa_pairs
+
+    def after_evaluation(self, val_result, split_name, **kwargs):
+        result_file = self.save_result(
+            val_result,
+            result_dir=registry.get_path("result_dir"),
+            filename=f"{split_name}_vqa_result",
+            remove_duplicate="",
+        )
+        if split_name == 'val':
+            metrics = self._report_metrics(result_file=result_file, split=split_name)
+        else:
+            metrics = None 
+        return metrics
+
+    # @dist_utils.main_process
+    # def _report_metrics(self, result_file, split):
+    #     """
+    #     Use official VQA evaluation script to report metrics.
+    #     """
+    #     metrics = {}
+
+
+    #     annFile = "lavis/vizwiz/annotations/" + split + ".json"
+    #     vqa = VQA_Vizwiz(annFile)
+    #     vqa_result = VQA_Vizwiz(result_file)
+
+    #     # create vqaEval object by taking vqa and vqaRes
+    #     # n is precision of accuracy (number of places after decimal), default is 2
+    #     vqa_scorer = VQAEval_Vizwiz(vqa, vqa_result, n=2)
+    #     logging.info("Start VQA Vizwiz evaluation.")
+    #     vqa_scorer.evaluate()
+
+    #     # print accuracies
+    #     overall_acc = vqa_scorer.accuracy["overall"]
+    #     metrics["agg_metrics"] = overall_acc
+
+    #     logging.info("Overall Accuracy is: %.02f\n" % overall_acc)
+    #     logging.info("Per Answer Type Accuracy is the following:")
+
+    #     for ans_type in vqa_scorer.accuracy["perAnswerType"]:
+    #         logging.info(
+    #             "%s : %.02f"
+    #             % (ans_type, vqa_scorer.accuracy["perAnswerType"][ans_type])
+    #         )
+    #         metrics[ans_type] = vqa_scorer.accuracy["perAnswerType"][ans_type]
+
+    #     with open(
+    #         os.path.join(registry.get_path("output_dir"), "evaluate.txt"), "a"
+    #     ) as f:
+    #         print(f"wrote result on {f}")
+    #         f.write(json.dumps(metrics) + "\n")
+
+    #     return metrics

@@ -37,8 +37,10 @@ class ScienceQADataset(BaseDataset):
         for ann in ann_paths:
             # self.annotation.extend(pd.read_parquet(ann))
             self.annotation = pd.read_json(ann)
+            
+        # answer_list for vocabulary ranking method
+        self.answer_list = ["0", "1", "2", "3", "4"]
         
-
     def __getitem__(self, index):
         ann = self.annotation.iloc[index]
 
