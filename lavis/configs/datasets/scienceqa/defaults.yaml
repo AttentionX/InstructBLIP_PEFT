@@ -7,11 +7,14 @@ datasets:
       # Be careful not to append minus sign (-) before split to avoid itemizing
       annotations:
         train:
-          storage: scienceqa/annotations/scienceqa_train.json
+          url: /root/InstructBLIP_PEFT/lavis/scienceqa/scienceqa_train.json
+          storage: /root/InstructBLIP_PEFT/lavis/scienceqa/scienceqa_train.json
         val:
-          storage: scienceqa/annotations/scienceqa_val.json
+          url: /root/InstructBLIP_PEFT/lavis/scienceqa/scienceqa_val.json
+          storage: /root/InstructBLIP_PEFT/lavis/scienceqa/scienceqa_val.json
         test:
-          storage: scienceqa/annotations/scienceqa_test.json
+          url: /root/InstructBLIP_PEFT/lavis/scienceqa/scienceqa_test.json
+          storage: /root/InstructBLIP_PEFT/lavis/scienceqa/scienceqa_test.json
       images:
         train:
           storage: scienceqa/images/
