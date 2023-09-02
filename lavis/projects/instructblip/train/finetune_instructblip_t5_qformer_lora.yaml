@@ -8,6 +8,12 @@ model:
   model_type: flant5xl # vicuna7b #
   load_pretrained: True #pretrain from scratch
   freeze_vit: True
+  lora_r: 8
+  lora_alpha: 16
+  lora_dropout: 0.05
+  BertSelfAttention_lora: True
+  BertSelfOutput_lora: True
+  BertOutput_lora: True
 
 datasets:
   # scienceqa:
@@ -55,6 +61,9 @@ run:
   batch_size_eval: 1
   num_workers: 4
   warmup_steps: 5000
+
+  qformer_attention: True
+  qformer_mlp: True
 
   seed: 42
   output_dir: "output/InstructBLIP/finetune"

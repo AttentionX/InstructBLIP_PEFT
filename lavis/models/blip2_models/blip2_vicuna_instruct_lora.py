@@ -756,6 +756,9 @@ class Blip2VicunaInstructLoRA(Blip2Base):
             apply_lemmatizer=apply_lemmatizer,
             qformer_text_input=qformer_text_input,
         )
+        
+        # If lora
+        # Adjust model
 
         # if qformer_text_input:
         #     # Hard-coded to load from BLIP-2 stage-1 pre-trained model (not ideal)

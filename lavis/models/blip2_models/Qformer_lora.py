@@ -547,6 +547,7 @@ class BertSelfAttention(Qformer.BertSelfAttention):
 #         self.rope_cache = None
 
 class BertSelfOutput(Qformer.BertSelfOutput):
+    lora_config = LoRAConfig(r=lora_r, alpha=lora_alpha, dropout=lora_dropout)
     def __init__(self, config):
         super().__init__()
         # self.dense = nn.Linear(config.hidden_size, config.hidden_size)
@@ -565,6 +566,7 @@ class BertSelfOutput(Qformer.BertSelfOutput):
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
         
 class BertOutput(Qformer.BertOutput):
+    lora_config = LoRAConfig(r=lora_r, alpha=lora_alpha, dropout=lora_dropout)
     def __init__(self, config):
         super().__init__()
         # self.dense = nn.Linear(config.intermediate_size, config.hidden_size)
@@ -618,3 +620,36 @@ def lora(r=lora_r, alpha=lora_alpha, dropout=lora_dropout, enabled: bool = True)
 
     BertSelfAttention.lora_config = None
     # CausalSelfAttention.lora_config = None
+    
+@contextmanager
+def custom_lora(r=lora_r, alpha=lora_alpha, dropout=lora_dropout, enabled: bool = True, type: str ="BertSelfOutput"):
+    """Apply context manager under which you can instantiate the model with LoRA.
+
+    In a nutshell the code inside this function forces to use LoRA variant of causal self-attention
+    instead of the original one (without LoRA).
+
+    Args:
+        r: rank of the weight update matrices. To make sense of using LoRA the rank should be smaller than the rank of
+            the weights of the model.  The rank can be as low as 1: https://arxiv.org/pdf/2106.09685.pdf (section 7.2)
+        alpha: alpha is needed for scaling updates as alpha/r
+            "This scaling helps to reduce the need to retune hyperparameters when we vary r"
+            https://arxiv.org/pdf/2106.09685.pdf (section 4.1)
+        dropout: dropout that is applied on the input in the LoRA branch (before multiplying by matrix A)
+        enabled: enables/disables LoRA
+    """
+    if not enabled:
+        yield
+        return
+    
+    if type == "BertSelfOutput":
+        BertSelfOutput.lora_config = LoRAConfig(r=r, alpha=alpha, dropout=dropout)
+        bert_self_output = Qformer.BertSelfOutput
+        Qformer.BertSelfOutput = BertSelfOutput
+        yield
+        Qformer.BertSelfOutput = bert_self_output
+    elif type == "BertOutput":
+        BertOutput.lora_config = LoRAConfig(r=r, alpha=alpha, dropout=dropout)
+        bert_output = Qformer.BertOutput
+        Qformer.BertOutput = BertOutput
+        yield
+        Qformer.BertOutput = bert_output
