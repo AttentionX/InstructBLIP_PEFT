@@ -406,6 +406,7 @@ class LoRAConfig:
 
 class BertSelfAttention(Qformer.BertSelfAttention):
     lora_config = LoRAConfig(r=lora_r, alpha=lora_alpha, dropout=lora_dropout)
+    qkv = [True, True, True]
     
     def __init__(self, config, is_cross_attention):
         super().__init__()
@@ -422,49 +423,9 @@ class BertSelfAttention(Qformer.BertSelfAttention):
         self.attention_head_size = int(config.hidden_size / config.num_attention_heads)
         self.all_head_size = self.num_attention_heads * self.attention_head_size
 
-        # self.query = nn.Linear(config.hidden_size, self.all_head_size)
-        self.query = MergedLinear(
-            config.hidden_size,
-            self.all_head_size,
-            r=self.lora_config.r,
-            lora_alpha=self.lora_config.alpha,
-            lora_dropout=self.lora_config.dropout,
-            enable_lora=[True],
-            fan_in_fan_out = False,
-            merge_weights=True,
-            bias=True
-        )
-        if is_cross_attention:
-            # Key could be regular linear
-            # self.key = nn.Linear(config.encoder_width, self.all_head_size)
-            self.key = MergedLinear(
-                config.encoder_width,
-                self.all_head_size,
-                r=self.lora_config.r,
-                lora_alpha=self.lora_config.alpha,
-                lora_dropout=self.lora_config.dropout,
-                enable_lora=[True],
-                fan_in_fan_out = False,
-                merge_weights=True,
-                bias=True
-            )
-
-            # self.value = nn.Linear(config.encoder_width, self.all_head_size)
-            self.value = MergedLinear(
-                config.encoder_width,
-                self.all_head_size,
-                r=self.lora_config.r,
-                lora_alpha=self.lora_config.alpha,
-                lora_dropout=self.lora_config.dropout,
-                enable_lora=[True],
-                fan_in_fan_out = False,
-                merge_weights=True,
-                bias=True
-            )
-        else:
-            # Key could be regular linear
-            # self.key = nn.Linear(config.hidden_size, self.all_head_size)
-            self.key = MergedLinear(
+        self.query = nn.Linear(config.hidden_size, self.all_head_size)
+        if self.qkv[0] is True or is_cross_attention is not True:
+            self.query = MergedLinear(
                 config.hidden_size,
                 self.all_head_size,
                 r=self.lora_config.r,
@@ -475,6 +436,49 @@ class BertSelfAttention(Qformer.BertSelfAttention):
                 merge_weights=True,
                 bias=True
             )
+        if is_cross_attention:
+            # Key could be regular linear
+            self.key = nn.Linear(config.encoder_width, self.all_head_size)
+            if self.qkv[1] is True:
+                self.key = MergedLinear(
+                    config.encoder_width,
+                    self.all_head_size,
+                    r=self.lora_config.r,
+                    lora_alpha=self.lora_config.alpha,
+                    lora_dropout=self.lora_config.dropout,
+                    enable_lora=[True],
+                    fan_in_fan_out = False,
+                    merge_weights=True,
+                    bias=True
+                )
+
+            self.value = nn.Linear(config.encoder_width, self.all_head_size)
+            if self.qkv[2] is True:
+                self.value = MergedLinear(
+                    config.encoder_width,
+                    self.all_head_size,
+                    r=self.lora_config.r,
+                    lora_alpha=self.lora_config.alpha,
+                    lora_dropout=self.lora_config.dropout,
+                    enable_lora=[True],
+                    fan_in_fan_out = False,
+                    merge_weights=True,
+                    bias=True
+                )
+        else:
+            # Key could be regular linear
+            self.key = nn.Linear(config.hidden_size, self.all_head_size)
+            # self.key = MergedLinear(
+            #     config.hidden_size,
+            #     self.all_head_size,
+            #     r=self.lora_config.r,
+            #     lora_alpha=self.lora_config.alpha,
+            #     lora_dropout=self.lora_config.dropout,
+            #     enable_lora=[True],
+            #     fan_in_fan_out = False,
+            #     merge_weights=True,
+            #     bias=True
+            # )
             
             # self.value = nn.Linear(config.hidden_size, self.all_head_size)
             self.value = MergedLinear(
@@ -585,7 +589,7 @@ class BertOutput(Qformer.BertOutput):
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
 
 @contextmanager
-def lora(r=lora_r, alpha=lora_alpha, dropout=lora_dropout, enabled: bool = True):
+def lora(r=lora_r, alpha=lora_alpha, dropout=lora_dropout, enabled: bool = True, type: str ="BertSelfAttention", qkv:list= [True, True, True]):
     """Apply context manager under which you can instantiate the model with LoRA.
 
     In a nutshell the code inside this function forces to use LoRA variant of causal self-attention
