@@ -62,9 +62,6 @@ run:
   num_workers: 4
   warmup_steps: 5000
 
-  qformer_attention: True
-  qformer_mlp: True
-
   seed: 42
   output_dir: "output/InstructBLIP/finetune"
 
