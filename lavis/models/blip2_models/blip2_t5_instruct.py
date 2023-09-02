@@ -337,7 +337,7 @@ class Blip2T5Instruct(Blip2Base):
             Qformer_atts = torch.cat([query_atts,text_Qformer.attention_mask],dim=1)
 
         # For video data
-        if image.dim() == 5:
+        if image.dim() == 5: 
             inputs_t5, atts_t5 = [], []
             for j in range(image.size(2)):
                 this_frame = image[:,:,j,:,:]

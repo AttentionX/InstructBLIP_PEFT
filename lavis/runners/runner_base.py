@@ -356,27 +356,27 @@ class RunnerBase:
         if not self.evaluate_only and self.resume_ckpt_path is not None:
             self._load_checkpoint(self.resume_ckpt_path)
 
-        if len(self.valid_splits) > 0:
-            for split_name in self.valid_splits:
-                logging.info("INIT Evaluating on {}.".format(split_name))
+        # if len(self.valid_splits) > 0:
+        #     for split_name in self.valid_splits:
+        #         logging.info("INIT Evaluating on {}.".format(split_name))
 
-                val_log = self.eval_epoch(
-                    split_name=split_name, cur_epoch=-1
-                )
-                if val_log is not None:
-                    if is_main_process():
-                        assert (
-                            "agg_metrics" in val_log
-                        ), "No agg_metrics found in validation log."
+        #         val_log = self.eval_epoch(
+        #             split_name=split_name, cur_epoch=-1
+        #         )
+        #         if val_log is not None:
+        #             if is_main_process():
+        #                 assert (
+        #                     "agg_metrics" in val_log
+        #                 ), "No agg_metrics found in validation log."
 
-                        agg_metrics = val_log["agg_metrics"]
-                        if agg_metrics > best_agg_metric and split_name == "val":
-                            best_epoch, best_agg_metric = -1, agg_metrics
+        #                 agg_metrics = val_log["agg_metrics"]
+        #                 if agg_metrics > best_agg_metric and split_name == "val":
+        #                     best_epoch, best_agg_metric = -1, agg_metrics
 
-                            self._save_checkpoint(-1, is_best=True)
+        #                     self._save_checkpoint(-1, is_best=True)
 
-                        val_log.update({"best_epoch": best_epoch})
-                        self.log_stats(val_log, split_name)        
+        #                 val_log.update({"best_epoch": best_epoch})
+        #                 self.log_stats(val_log, split_name)        
         for cur_epoch in range(self.start_epoch, self.max_epoch):
             # training phase
             if not self.evaluate_only:

@@ -74,8 +74,10 @@ class VizWizDataset(BaseDataset):
         instruction = f'<Image> Question: {ann["question"]} Short answer:'
         
         instruction = self.text_processor(instruction)
-
-        answer = ann["answers"][0]["answer"] # 0~9
+        answer = []
+        for i in range(10):
+            answer.append(ann["answers"][i]["answer"])
+        # answer =  # 0~9
 
         return {
             "image": image,

@@ -336,7 +336,30 @@ class VizWizTask(VQATask):
             ), "Only support one split for evaluation."
 
         return datasets
+    
+    def train_step(self, model, samples):
+        # 10 - mean 
+        # make 10-fold sample list 
+        sample_list = []
+        for i in range(10):
+            sample_list.append({"image" : samples["image"], "text_input": samples["text_input"], "text_output": samples["text_output"][i]})
+        # print("samples")
+        # print(samples)
+        # print(samples["image"].shape)
+        output_list = []
+        for i in range(10):
+            output_list.append(model(sample_list[i]))
+        output = {"loss" : 0} 
+        for i in range(10):
+            output["loss"] += (output_list[i]["loss"]/10)
 
+        # output = model(samples)
+        loss_dict = {}
+        for k,v in output.items():
+            if "loss" in k:
+                loss_dict[k] = v
+        return output["loss"], loss_dict
+    
     def valid_step(self, model, samples):
         answers = model.predict_answers(
             samples=samples,

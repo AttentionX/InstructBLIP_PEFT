@@ -47,9 +47,10 @@ datasets:
         test:
           storage: vizwiz/annotations/test.json
       images:
-        train:
-          storage: vizwiz/images/train
-        val:
-          storage: vizwiz/images/val
-        test:
-          storage: vizwiz/images/test
+        storage: vizwiz/images
+        # train:
+        #   storage: vizwiz/images/train
+        # val:
+        #   storage: vizwiz/images/val
+        # test:
+        #   storage: vizwiz/images/test
