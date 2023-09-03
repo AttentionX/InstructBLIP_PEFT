@@ -350,6 +350,7 @@ class ScienceQATask(VQATask):
         )
         pred_qa_pairs = []
 
+
         question_id = samples["question_id"]
         gt_answers = samples["answer"]
         # img_names = samples["image_name"]
@@ -390,7 +391,7 @@ class ScienceQATask(VQATask):
             gt_ans = res["gt_ans"]
 
             num_match = sum([pred == gt for gt in gt_ans])
-            vqa_acc = min(1.0, num_match / 3.0)
+            vqa_acc = min(1.0, num_match / len(gt_ans))
 
             acc.append(vqa_acc)
 
@@ -398,7 +399,7 @@ class ScienceQATask(VQATask):
         metrics = {"agg_metrics": accuracy, "acc": accuracy}
 
         with open(
-            os.path.join(registry.get_path("output_dir"), f"scienceqa/{split}/evaluate.txt"), "a"
+            os.path.join(registry.get_path("output_dir"), f"log.txt"), "a"
         ) as f:
             f.write(json.dumps(metrics) + "\n")
 

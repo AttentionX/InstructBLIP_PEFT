@@ -128,8 +128,11 @@ class BaseDatasetBuilder:
                 urls = [urls]
             if isinstance(storage_paths, str):
                 storage_paths = [storage_paths]
-
-            assert len(urls) == len(storage_paths)
+            
+            if urls is None:
+                urls = []
+            if len(urls) != len(storage_paths):
+                return 
 
             for url_or_filename, storage_path in zip(urls, storage_paths):
                 # if storage_path is relative, make it full by prefixing with cache_root.

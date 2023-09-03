@@ -55,8 +55,12 @@ class ScienceQADataset(BaseDataset):
         text_input = self.get_text_input(ann)
         text_input = self.text_processor(text_input)
 
-        answer = ann["answer"]
-
+        answer = str(ann["answer"])
+        # print({
+        #     "image": image,
+        #     "text_input": text_input,
+        #     "text_output" : answer,
+        # })
         return {
             "image": image,
             "text_input": text_input,
@@ -72,7 +76,7 @@ class ScienceQADataset(BaseDataset):
 
             answers = sample["text_output"]
 
-            answer_list.extend(answers)
+            answer_list.extend([answers])
 
         return {
             "image": torch.stack(image_list, dim=0),
@@ -120,31 +124,24 @@ class ScienceQAEvalDataset(VQAEvalDataset, __DisplMixin):
         vis_root (string): Root directory of images 
         ann_root (string): directory to store the annotation file
         """
-
-        self.vis_root = vis_root
-
-        self.annotation = []
+        super().__init__(vis_processor, text_processor, vis_root, ann_paths=[])
+        # self.annotation = []
+        # for ann in ann_paths:
+        #     # self.annotation.extend(pd.read_parquet(ann))
+        #     self.annotation = pd.read_json(ann)
+    
+        self.annotation = [] 
         for ann in ann_paths:
-            # self.annotation.extend(pd.read_parquet(ann))
-            # to use self._add_instance_ids(), we need to use json.load
             self.annotation.extend(json.load(open(ann)))
-        
+            
+        # answer_list for vocabulary ranking method
+        self.answer_list = ["0", "1", "2", "3", "4"]
 
-        ## TODO: support inference method == 'ranking'
-        answer_list_path = ann_paths[0] if len(ann_paths) > 0 else ''
-        if os.path.exists(answer_list_path):
-            self.answer_list = json.load(open(answer_list_path))
-        else:
-            print("None!!")
-            self.answer_list = None
-
-        self.vis_processor = vis_processor
-        self.text_processor = text_processor
 
         self._add_instance_ids()
 
-    def __getitem__(self, index):
-        ann = self.annotation.iloc[index]
+    def __getitem__(self, index): 
+        ann = self.annotation[index]
 
         image_path = os.path.join(self.vis_root, ann["image"])
         image = Image.open(image_path).convert("RGB")
@@ -156,17 +153,58 @@ class ScienceQAEvalDataset(VQAEvalDataset, __DisplMixin):
         
         text_input = self.get_text_input(ann)
         text_input = self.text_processor(text_input)
-        if "answer" in ann.keys(): 
-            answer = ann["answer"]
-        else:
-            answer = ""
-            
+
+        answer = str(ann["answer"])
+        # print({
+        #     "image": image,
+        #     "text_input": text_input,
+        #     "text_output" : answer,
+        # })
         return {
             "image": image,
             "text_input": text_input,
             "text_output" : answer,
+            "answer": answer, 
             "question_id": ann["instance_id"]
         }
+    
+    def collater(self, samples):
+        image_list, question_list, answer_list, id_list = [], [], [], []
+        for sample in samples:
+            image_list.append(sample["image"])
+            question_list.append(sample["text_input"])
+
+            answers = sample["text_output"]
+
+            answer_list.extend([answers])
+            id_list.extend(sample["question_id"])
+
+        return {
+            "image": torch.stack(image_list, dim=0),
+            "text_input": question_list,
+            # "text_output": answer_list,
+            "answer": answer_list,
+            "question_id": id_list,
+        }
+    
+    @staticmethod
+    def get_question(sample):
+        choices = ""
+        
+        i = 0
+        for choice in sample["choices"]:
+            choices += f"{i}. {choice}\n"
+            i += 1
+        
+        question = f"""
+        {sample["question"]}
+        
+        Choose from one of the following:
+        {choices}
+        
+        Answer with a single number only.
+        """
+        return question
     
     @staticmethod
     def get_text_input(sample):
