@@ -70,11 +70,11 @@ class VATEXCapBuilder(BaseDatasetBuilder):
     }
 
     
-@registry.register_builder("flickr")
+@registry.register_builder("flickr30k_instruct")
 class FlickrBuilder(BaseDatasetBuilder):
     train_dataset_cls = FlickrDataset
     eval_dataset_cls = FlickrDataset
 
     DATASET_CONFIG_DICT = {
-        "default": "configs/datasets/flickr30k/defaults.yaml",
+        "default": "configs/datasets/flickr30k_instruct/defaults.yaml",
     }

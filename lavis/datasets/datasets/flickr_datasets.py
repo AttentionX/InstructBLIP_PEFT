@@ -3,12 +3,12 @@ import pandas as pd
 from PIL import Image
 import torch
 
+from lavis.datasets.datasets.base_dataset import BaseDataset
 from lavis.datasets.datasets.caption_datasets import CaptionDataset, CaptionEvalDataset
 
 
-class FlickrDataset(CaptionDataset):
+class FlickrDataset(BaseDataset):
     """Flickr30k caption dataset in instruction format"""
-
     def __getitem__(self, index):
         print("Flickr item!")
         ann = self.annotation[index]
@@ -18,7 +18,7 @@ class FlickrDataset(CaptionDataset):
         )  # ann['image'] = flickr30k-images/00001.jpg
         image = Image.open(image_path).convert("RGB")
 
-        img_id = ann["image_id"]
+        # img_id = ann["image_id"]
         image = self.vis_processor(image)
 
         instruction = "<Image> A short image description:"
@@ -31,7 +31,7 @@ class FlickrDataset(CaptionDataset):
             "image": image,
             "text_input": instruction,
             "text_output": caption,
-            "image_id": img_id,
+            # "image_id": img_id,
         }
 
 
