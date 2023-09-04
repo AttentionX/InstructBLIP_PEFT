@@ -333,7 +333,7 @@ class RunnerBase:
     def setup_output_dir(self):
         lib_root = Path(registry.get_path("library_root"))
 
-        output_dir = lib_root / self.config.run_cfg.output_dir / self.job_id
+        output_dir = Path(self.config.run_cfg.output_dir) / self.job_id
         result_dir = output_dir / "result"
 
         output_dir.mkdir(parents=True, exist_ok=True)
