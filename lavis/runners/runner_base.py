@@ -338,10 +338,10 @@ class RunnerBase:
         lib_root = Path(registry.get_path("library_root"))
 
         # default output_dir = /root/run_base/lavis/output/{output_dir}/{job_id}
-        output_dir = lib_root / self.config.run_cfg.output_dir / self.job_id
+        # output_dir = lib_root / self.config.run_cfg.output_dir / self.job_id
         
         # fixed output_dir = /output/{output_dir}/{job_id}
-        # output_dir = (Path("/output") / self.config.run_cfg.output_dir / self.job_id).absolute()
+        output_dir = self.config.run_cfg.output_dir / self.job_id
         result_dir = output_dir / "result"
 
         output_dir.mkdir(parents=True, exist_ok=True)
