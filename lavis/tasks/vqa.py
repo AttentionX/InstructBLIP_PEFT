@@ -483,7 +483,7 @@ class Flickr30kInstructTask(VQATask):
         # create vqaEval object by taking vqa and vqaRes
         # n is precision of accuracy (number of places after decimal), default is 2
         vqa_scorer = VQAEval_Vizwiz(vqa, vqa_result, n=2)
-        logging.info("Start VQA Vizwiz evaluation.")
+        logging.info("Start Flickr30k caption instruction task evaluation.")
         vqa_scorer.evaluate()
 
         # print accuracies

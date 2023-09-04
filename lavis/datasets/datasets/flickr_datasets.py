@@ -7,7 +7,7 @@ from lavis.datasets.datasets.base_dataset import BaseDataset
 from lavis.datasets.datasets.caption_datasets import CaptionDataset, CaptionEvalDataset
 
 
-class FlickrDataset(BaseDataset):
+class FlickrDataset(CaptionDataset):
     """Flickr30k caption dataset in instruction format"""
     def __getitem__(self, index):
         print("Flickr item!")
@@ -63,13 +63,14 @@ class FlickrEvalDataset(CaptionEvalDataset):
         print("eval data")
         print(
             {
-                "image": image,
+                "image_name" : ann["image"],
                 "text_input": instruction,
                 "text_output": caption,
             }
         )
         return {
             "image": image,
+            "image_name" : ann["image"],
             "text_input": instruction,
             "text_output": caption,
         }
