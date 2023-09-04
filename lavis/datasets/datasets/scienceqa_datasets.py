@@ -39,7 +39,7 @@ class ScienceQADataset(BaseDataset):
             self.annotation = pd.read_json(ann)
             
         # answer_list for vocabulary ranking method
-        self.answer_list = ["0", "1", "2", "3", "4"]
+        self.answer_list = ["(a)", "(b)", "(c)", "(d)", "(e)"]
         
     def __getitem__(self, index):
         ann = self.annotation.iloc[index]
@@ -89,8 +89,10 @@ class ScienceQADataset(BaseDataset):
         choices = ""
         
         i = 0
+        # 0 -> a, 1 -> b, 2 -> c, 3 -> d, 4 -> e
         for choice in sample["choices"]:
-            choices += f"{i}. {choice}\n"
+            label = chr(ord('a') + i)
+            choices += f"({label}). {choice}\n"
             i += 1
         
         question = f"""
@@ -135,7 +137,7 @@ class ScienceQAEvalDataset(VQAEvalDataset, __DisplMixin):
             self.annotation.extend(json.load(open(ann)))
             
         # answer_list for vocabulary ranking method
-        self.answer_list = ["0", "1", "2", "3", "4"]
+        self.answer_list = ["(a)", "(b)", "(c)", "(d)", "(e)"]
 
 
         self._add_instance_ids()
@@ -192,8 +194,10 @@ class ScienceQAEvalDataset(VQAEvalDataset, __DisplMixin):
         choices = ""
         
         i = 0
+        # 0 -> a, 1 -> b, 2 -> c, 3 -> d, 4 -> e
         for choice in sample["choices"]:
-            choices += f"{i}. {choice}\n"
+            label = chr(ord('a') + i)
+            choices += f"({label}). {choice}\n"
             i += 1
         
         question = f"""
