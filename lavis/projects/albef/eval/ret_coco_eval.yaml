@@ -1,7 +1,7 @@
- # Copyright (c) 2022, salesforce.com, inc.
- # All rights reserved.
- # SPDX-License-Identifier: BSD-3-Clause
- # For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
+# Copyright (c) 2022, salesforce.com, inc.
+# All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+# For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
 
 model:
   arch: albef_retrieval
@@ -10,12 +10,12 @@ model:
 datasets:
   coco_retrieval: # name of the dataset builder
     vis_processor:
-        eval:
-          name: "blip_image_eval"
-          image_size: 384
+      eval:
+        name: "blip_image_eval"
+        image_size: 384
     text_processor:
-        eval:
-          name: "blip_caption"
+      eval:
+        name: "blip_caption"
 
 run:
   task: retrieval
