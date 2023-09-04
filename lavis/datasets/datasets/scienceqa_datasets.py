@@ -55,7 +55,7 @@ class ScienceQADataset(BaseDataset):
         text_input = self.get_text_input(ann)
         text_input = self.text_processor(text_input)
 
-        answer = str(ann["answer"])
+        answer = ann["answer"]
         # print({
         #     "image": image,
         #     "text_input": text_input,
@@ -110,11 +110,13 @@ class ScienceQADataset(BaseDataset):
         choices = ""
         
         i = 0
+        # 0 -> a, 1 -> b, 2 -> c, 3 -> d, 4 -> e
         for choice in sample["choices"]:
-            choices += f"{i}. {choice}\n"
+            label = chr(ord('a') + i)
+            choices += f"({label}). {choice}\n"
             i += 1
         
-        text_input = f"""Context: {sample['context']} Question: {sample['question']} Options: {choices}. Answer:"""
+        text_input = f"""Context: {{{sample['context']}}} Question: {{{sample['question']}}} Options: {{{choices}}} Answer:"""
         
         return text_input
         
@@ -156,7 +158,7 @@ class ScienceQAEvalDataset(VQAEvalDataset, __DisplMixin):
         text_input = self.get_text_input(ann)
         text_input = self.text_processor(text_input)
 
-        answer = str(ann["answer"])
+        answer = ann["answer"]
         # print({
         #     "image": image,
         #     "text_input": text_input,
@@ -215,10 +217,12 @@ class ScienceQAEvalDataset(VQAEvalDataset, __DisplMixin):
         choices = ""
         
         i = 0
+        # 0 -> a, 1 -> b, 2 -> c, 3 -> d, 4 -> e
         for choice in sample["choices"]:
-            choices += f"{i}. {choice}\n"
+            label = chr(ord('a') + i)
+            choices += f"({label}). {choice}\n"
             i += 1
         
-        text_input = f"""Context: {sample['context']} Question: {sample['question']} Options: {choices}. Answer:"""
+        text_input = f"""Context: {{{sample['context']}}} Question: {{{sample['question']}}} Options: {{{choices}}} Answer:"""
         
         return text_input
