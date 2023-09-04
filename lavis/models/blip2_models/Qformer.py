@@ -45,9 +45,6 @@ from transformers.modeling_utils import (
 from transformers.utils import logging
 from transformers.models.bert.configuration_bert import BertConfig
 
-# import lavis.models.blip2_models.Qformer_lora as Qformer_lora
-# from Qformer_lora import lora 
-
 
 logger = logging.get_logger(__name__)
 
@@ -56,10 +53,6 @@ USE_LORA = True
 lora_r = 8
 lora_alpha = 16
 lora_dropout = 0.05
-
-if USE_LORA:
-    # Choose from BERT Self-Attention, Bert Self-Output, Bert-Output to use LoRA
-    pass
 
 
 class BertEmbeddings(nn.Module):

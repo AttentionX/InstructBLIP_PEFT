@@ -19,12 +19,6 @@ from lavis.common.dist_utils import download_cached_file
 
 from lavis.models.blip2_models.Qformer_lora import lora, custom_lora, mark_only_lora_as_trainable
 
-# Add LoRA Q-former here
-QFORMER_LORA = False 
-if QFORMER_LORA:
-    import Qformer_lora
-    Qformer_lora.lora()
-
 @registry.register_model("blip2_vicuna_instruct_qformer_lora")
 class Blip2VicunaInstructQformerLoRA(Blip2Base):
     """
@@ -91,8 +85,6 @@ class Blip2VicunaInstructQformerLoRA(Blip2Base):
         self.Qformer.cls = None
         
         # Train only the Qformer LoRA
-        # if QFORMER_LORA:
-        #     Qformer_lora.mark_only_lora_as_trainable(self.Qformer)
         mark_only_lora_as_trainable(self.Qformer)
         
         self.llm_tokenizer = LlamaTokenizer.from_pretrained(llm_model, use_fast=False, truncation_side="left")
