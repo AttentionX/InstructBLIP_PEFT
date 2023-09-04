@@ -46,13 +46,18 @@ datasets:
 #           name: "blip_question"
 #         eval:
 #           name: "blip_question"
-  flickr:
+  flickr30k_instruct:
      vis_processor:
         train:
           name: "blip2_image_train"
           image_size: 224
+        eval:
+          name: "blip2_image_train"
+          image_size: 224
      text_processor:
-          train:
+        train:
+          name: "blip_caption"
+        eval:
           name: "blip_caption"
 #     build_info:
 #         images:
