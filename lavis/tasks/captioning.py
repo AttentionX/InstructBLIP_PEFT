@@ -114,7 +114,7 @@ class Flickr30kCaptionTask(CaptionTask):
 
         img_names = samples["image_name"]
         for caption, img_name in zip(captions, img_names):
-            results.append({"caption": caption, "image_name": int(img_name)})
+            results.append({"caption": caption, "image_name": img_name})
 
         return results
 
