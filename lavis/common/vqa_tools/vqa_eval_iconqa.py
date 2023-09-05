@@ -11,7 +11,7 @@ import re
 import numpy as np
 from sklearn.metrics import average_precision_score, f1_score
 
-class VQAEval_Vizwiz:
+class VQAEval_IconQA:
 	def __init__(self, vqa, vqaRes, n=2):
 		self.n 			  = n
 		self.accuracy     = {}
@@ -226,73 +226,73 @@ class VQAEval_Vizwiz:
 
 
 
-from .pycocoevalcap.tokenizer.ptbtokenizer import PTBTokenizer
-from .pycocoevalcap.bleu.bleu import Bleu
-from .pycocoevalcap.meteor.meteor import Meteor
-from .pycocoevalcap.rouge.rouge import Rouge
-from .pycocoevalcap.cider.cider import Cider
+# from .pycocoevalcap.tokenizer.ptbtokenizer import PTBTokenizer
+# from .pycocoevalcap.bleu.bleu import Bleu
+# from .pycocoevalcap.meteor.meteor import Meteor
+# from .pycocoevalcap.rouge.rouge import Rouge
+# from .pycocoevalcap.cider.cider import Cider
 
-class COCOEvalCap:
-    def __init__(self,images,gts,res):
-        self.evalImgs = []
-        self.eval = {}
-        self.imgToEval = {}
-        self.params = {'image_id': images}
-        self.gts = gts
-        self.res = res
+# class COCOEvalCap:
+#     def __init__(self,images,gts,res):
+#         self.evalImgs = []
+#         self.eval = {}
+#         self.imgToEval = {}
+#         self.params = {'image_id': images}
+#         self.gts = gts
+#         self.res = res
 
-    def evaluate(self):
-        imgIds = self.params['image_id']
-        gts = self.gts
-        res = self.res
+#     def evaluate(self):
+#         imgIds = self.params['image_id']
+#         gts = self.gts
+#         res = self.res
 
-        # =================================================
-        # Set up scorers
-        # =================================================
-        print('tokenization...')
-        tokenizer = PTBTokenizer()
-        gts  = tokenizer.tokenize(gts)
-        res = tokenizer.tokenize(res)
+#         # =================================================
+#         # Set up scorers
+#         # =================================================
+#         print('tokenization...')
+#         tokenizer = PTBTokenizer()
+#         gts  = tokenizer.tokenize(gts)
+#         res = tokenizer.tokenize(res)
 
-        # =================================================
-        # Set up scorers
-        # =================================================
-        print('setting up scorers...')
-        scorers = [
-            (Bleu(4), ["Bleu_1", "Bleu_2", "Bleu_3", "Bleu_4"]),
-            (Meteor(),"METEOR"),
-            (Rouge(), "ROUGE_L"),
-            (Cider(), "CIDEr")
-        ]
+#         # =================================================
+#         # Set up scorers
+#         # =================================================
+#         print('setting up scorers...')
+#         scorers = [
+#             (Bleu(4), ["Bleu_1", "Bleu_2", "Bleu_3", "Bleu_4"]),
+#             (Meteor(),"METEOR"),
+#             (Rouge(), "ROUGE_L"),
+#             (Cider(), "CIDEr")
+#         ]
 
-        # =================================================
-        # Compute scores
-        # =================================================
-        eval = {}
-        for scorer, method in scorers:
-            print('computing %s score...'%(scorer.method()))
-            assert(set(gts.keys()) == set(res.keys()))
-            score, scores = scorer.compute_score(gts, res)
-            if type(method) == list:
-                for sc, scs, m in zip(score, scores, method):
-                    self.setEval(sc, m)
-                    self.setImgToEvalImgs(scs, imgIds, m)
-                    print("%s: %0.3f"%(m, sc))
-            else:
-                self.setEval(score, method)
-                self.setImgToEvalImgs(scores, imgIds, method)
-                print("%s: %0.3f"%(method, score))
-        self.setEvalImgs()
+#         # =================================================
+#         # Compute scores
+#         # =================================================
+#         eval = {}
+#         for scorer, method in scorers:
+#             print('computing %s score...'%(scorer.method()))
+#             assert(set(gts.keys()) == set(res.keys()))
+#             score, scores = scorer.compute_score(gts, res)
+#             if type(method) == list:
+#                 for sc, scs, m in zip(score, scores, method):
+#                     self.setEval(sc, m)
+#                     self.setImgToEvalImgs(scs, imgIds, m)
+#                     print("%s: %0.3f"%(m, sc))
+#             else:
+#                 self.setEval(score, method)
+#                 self.setImgToEvalImgs(scores, imgIds, method)
+#                 print("%s: %0.3f"%(method, score))
+#         self.setEvalImgs()
 
-    def setEval(self, score, method):
-        self.eval[method] = score
+#     def setEval(self, score, method):
+#         self.eval[method] = score
 
-    def setImgToEvalImgs(self, scores, imgIds, method):
-        for imgId, score in zip(imgIds, scores):
-            if not imgId in self.imgToEval:
-                self.imgToEval[imgId] = {}
-                self.imgToEval[imgId]["image_id"] = imgId
-            self.imgToEval[imgId][method] = score
+#     def setImgToEvalImgs(self, scores, imgIds, method):
+#         for imgId, score in zip(imgIds, scores):
+#             if not imgId in self.imgToEval:
+#                 self.imgToEval[imgId] = {}
+#                 self.imgToEval[imgId]["image_id"] = imgId
+#             self.imgToEval[imgId][method] = score
 
-    def setEvalImgs(self):
-        self.evalImgs = [eval for imgId, eval in list(self.imgToEval.items())]
+#     def setEvalImgs(self):
+#         self.evalImgs = [eval for imgId, eval in list(self.imgToEval.items())]

@@ -21,7 +21,7 @@ import json
 import datetime
 import copy
 
-class VQA_Vizwiz:
+class VQA_IconQA:
 	def __init__(self, annotation_file=None):
 		"""
 	   	Constructor of VQA helper class for reading and visualizing questions and answers.
