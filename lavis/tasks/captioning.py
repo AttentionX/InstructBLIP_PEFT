@@ -81,7 +81,58 @@ class CaptionTask(BaseTask):
 
     @main_process
     def _report_metrics(self, eval_result_file, split_name):
+        # TODO better way to define this
+        coco_gt_root = os.path.join(registry.get_path("cache_root"), "coco_gt")
+        coco_val = coco_caption_eval(coco_gt_root, eval_result_file, split_name)
 
+        agg_metrics = coco_val.eval["CIDEr"] + coco_val.eval["Bleu_4"]
+        log_stats = {split_name: {k: v for k, v in coco_val.eval.items()}}
+
+        with open(
+            os.path.join(registry.get_path("output_dir"), "evaluate.txt"), "a"
+        ) as f:
+            f.write(json.dumps(log_stats) + "\n")
+
+        coco_res = {k: v for k, v in coco_val.eval.items()}
+        coco_res["agg_metrics"] = agg_metrics
+
+        return coco_res
+
+
+@registry.register_task("flickr30k_instruct")
+class Flickr30kCaptionTask(CaptionTask):
+    def valid_step(self, model, samples):
+        results = []
+
+        captions = model.generate(
+            samples,
+            use_nucleus_sampling=False,
+            num_beams=self.num_beams,
+            max_length=self.max_len,
+            min_length=self.min_len,
+        )
+
+        img_names = samples["image_name"]
+        for caption, img_name in zip(captions, img_names):
+            results.append({"caption": caption, "image_name": int(img_name)})
+
+        return results
+
+    def after_evaluation(self, val_result, split_name, epoch, **kwargs):
+        result_file = self.save_result(
+            val_result,
+            result_dir=registry.get_path("result_dir"),
+            filename=f"{split_name}_flickr30k_caption_instruct_result_epoch{epoch}",
+            remove_duplicate="",
+        )
+        if split_name == 'val':
+            metrics = self._report_metrics(result_file=result_file, split=split_name)
+        else:
+            metrics = None 
+        return metrics
+
+    @main_process
+    def _report_metrics(self, eval_result_file, split_name):
         # TODO better way to define this
         coco_gt_root = os.path.join(registry.get_path("cache_root"), "coco_gt")
         coco_val = coco_caption_eval(coco_gt_root, eval_result_file, split_name)
