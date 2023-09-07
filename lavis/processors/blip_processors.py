@@ -47,6 +47,8 @@ class BlipCaptionProcessor(BaseProcessor):
         return cls(prompt=prompt, max_words=max_words)
 
     def pre_caption(self, caption):
+        print("caption")
+        print(caption)
         caption = re.sub(
             r"([.!\"()*#:;~])",
             " ",
