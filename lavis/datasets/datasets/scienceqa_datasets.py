@@ -136,12 +136,13 @@ class ScienceQAEvalDataset(VQAEvalDataset, __DisplMixin):
     
         self.annotation = json.load(open(ann_paths[0]))
             
-        # answer_list for vocabulary ranking method
-        answer_list_path = ann_paths[1]
-        if os.path.exists(answer_list_path):
-            self.answer_list = json.load(open(answer_list_path))
-        else:
-            self.answer_list = ["(a)", "(b)", "(c)", "(d)", "(e)"]
+        # # answer_list for vocabulary ranking method
+        # answer_list_path = ann_paths[1]
+        # if os.path.exists(answer_list_path):
+        #     self.answer_list = json.load(open(answer_list_path))
+        # else:
+        #     
+        self.answer_list = ["(a)", "(b)", "(c)", "(d)", "(e)"]
 
 
         self._add_instance_ids()

@@ -351,19 +351,12 @@ class ScienceQATask(VQATask):
         candidates = []
         if not isinstance(samples, list):
             i = 0
-            for choice in samples["choices"]:
+            for choice in samples["choices"][0]:
                 label = chr(ord('a') + i)
-                candidates.append(f"({label}) {choice}\n")
+                candidates.append(f"({label}) {choice}")
                 i += 1
         else:
-            for sample in samples:
-                i = 0
-                temp = []
-                for choice in sample["choices"]:
-                    label = chr(ord('a') + i)
-                    temp.append(f"({label}) {choice}\n")
-                    i += 1
-                candidates.append(temp)
+            candidates = samples['choices']
         
         answers = model.predict_class(
             samples=samples,
