@@ -428,6 +428,7 @@ class RunnerBase:
 
             if count_for_early_stopping >= 3:
                 logging.info("Early stopped by reaching plaetu.")
+                break
 
         # testing phase
         test_epoch = "best" if len(self.valid_splits) > 0 else cur_epoch
