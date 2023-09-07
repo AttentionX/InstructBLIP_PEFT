@@ -36,6 +36,7 @@ class BaseDatasetBuilder:
             self.config = cfg
 
         self.data_type = self.config.data_type
+        self.train_sample_rate = self.config.train_sample_rate
 
         self.vis_processors = {"train": BaseProcessor(), "eval": BaseProcessor()}
         self.text_processors = {"train": BaseProcessor(), "eval": BaseProcessor()}
@@ -235,15 +236,21 @@ class BaseDatasetBuilder:
 
             # create datasets
             dataset_cls = self.train_dataset_cls if is_train else self.eval_dataset_cls
-            print("added")
-            print(split)
-            print(ann_paths)
-            datasets[split] = dataset_cls(
-                vis_processor=vis_processor,
-                text_processor=text_processor,
-                ann_paths=ann_paths,
-                vis_root=vis_path,
-            )
+            if is_train:
+                datasets[split] = dataset_cls(
+                    vis_processor=vis_processor,
+                    text_processor=text_processor,
+                    ann_paths=ann_paths,
+                    vis_root=vis_path,
+                    train_sample_rate=self.train_sample_rate 
+                )
+            else:
+                datasets[split] = dataset_cls(
+                    vis_processor=vis_processor,
+                    text_processor=text_processor,
+                    ann_paths=ann_paths,
+                    vis_root=vis_path,
+                )
 
         return datasets
 

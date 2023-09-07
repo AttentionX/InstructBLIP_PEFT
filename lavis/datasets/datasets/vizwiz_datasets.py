@@ -25,13 +25,15 @@ class __DisplMixin:
 
     
 class VizWizDataset(BaseDataset):
-    def __init__(self, vis_processor, text_processor, vis_root, ann_paths):
+    def __init__(self, vis_processor, text_processor, vis_root, ann_paths, train_sample_rate=1):
         super().__init__(vis_processor, text_processor, vis_root, ann_paths=[])
         self.annotation = []
         for ann in ann_paths:
             # self.annotation.extend(pd.read_parquet(ann))
             # self.annotation = pd.read_parquet(ann)
             self.annotation = pd.read_json(ann)
+        self.annotation = self.annotation.sample(frac=train_sample_rate)
+
     
     def __getitem__(self, index):
         ann = self.annotation.iloc[index]
