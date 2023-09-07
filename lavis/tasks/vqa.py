@@ -8,7 +8,7 @@
 import logging
 import json
 import os
-
+import torch
 import lavis.common.dist_utils as dist_utils
 from lavis.common.registry import registry
 from lavis.common.vqa_tools.vqa import VQA
@@ -338,26 +338,17 @@ class VizWizTask(VQATask):
         return datasets
     
     def train_step(self, model, samples):
-        # 10 - mean 
-        # make 10-fold sample list 
-        sample_list = []
-        for i in range(10):
-            sample_list.append({"image" : samples["image"], "text_input": samples["text_input"], "text_output": samples["text_output"][i]})
-        # print("samples")
-        # print(samples)
-        # print(samples["image"].shape)
-        output_list = []
-        for i in range(10):
-            output_list.append(model(sample_list[i]))
-        output = {"loss" : 0} 
-        for i in range(10):
-            output["loss"] += (output_list[i]["loss"]/10)
-
-        # output = model(samples)
+        txtout = []
+        for i in range(len(samples["text_output"])):
+            txtout.extend(samples["text_output"][i])
+        sample_final = {"image" : torch.cat([samples["image"]] *10 ), "text_input": samples["text_input"]*10, "text_output": txtout}
+    
+        output = model(sample_final)
         loss_dict = {}
         for k,v in output.items():
             if "loss" in k:
                 loss_dict[k] = v
+
         return output["loss"], loss_dict
     
     def valid_step(self, model, samples):
