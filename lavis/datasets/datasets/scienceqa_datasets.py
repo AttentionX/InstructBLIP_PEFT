@@ -134,12 +134,14 @@ class ScienceQAEvalDataset(VQAEvalDataset, __DisplMixin):
         #     # self.annotation.extend(pd.read_parquet(ann))
         #     self.annotation = pd.read_json(ann)
     
-        self.annotation = [] 
-        for ann in ann_paths:
-            self.annotation.extend(json.load(open(ann)))
+        self.annotation = json.load(open(ann_paths[0]))
             
         # answer_list for vocabulary ranking method
-        self.answer_list = ["(a)", "(b)", "(c)", "(d)", "(e)"]
+        answer_list_path = ann_paths[1]
+        if os.path.exists(answer_list_path):
+            self.answer_list = json.load(open(answer_list_path))
+        else:
+            self.answer_list = ["(a)", "(b)", "(c)", "(d)", "(e)"]
 
 
         self._add_instance_ids()
@@ -157,6 +159,8 @@ class ScienceQAEvalDataset(VQAEvalDataset, __DisplMixin):
         
         text_input = self.get_text_input(ann)
         text_input = self.text_processor(text_input)
+        
+        print(self.text_processor)
 
         answer = ann["answer"]
         # print({
@@ -167,6 +171,7 @@ class ScienceQAEvalDataset(VQAEvalDataset, __DisplMixin):
         return {
             "image": image,
             "text_input": text_input,
+            "choices" : ann['choices'],
             "text_output" : answer,
             "answer": answer, 
             "question_id": ann["instance_id"]
@@ -174,14 +179,15 @@ class ScienceQAEvalDataset(VQAEvalDataset, __DisplMixin):
     
     def collater(self, samples):
         image_list, question_list, answer_list, id_list = [], [], [], []
+        choices = []
         for sample in samples:
             image_list.append(sample["image"])
             question_list.append(sample["text_input"])
-
+            choices.append(sample['choices'])
             answers = sample["text_output"]
 
             answer_list.extend([answers])
-            id_list.extend(sample["question_id"])
+            id_list.extend([sample["question_id"]])
 
         return {
             "image": torch.stack(image_list, dim=0),
@@ -189,6 +195,7 @@ class ScienceQAEvalDataset(VQAEvalDataset, __DisplMixin):
             # "text_output": answer_list,
             "answer": answer_list,
             "question_id": id_list,
+            "choices" : choices,
         }
     
     @staticmethod

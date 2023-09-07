@@ -348,9 +348,27 @@ class ScienceQATask(VQATask):
         #     num_ans_candidates=self.num_ans_candidates,
         #     prompt=self.prompt,
         # )
+        candidates = []
+        if not isinstance(samples, list):
+            i = 0
+            for choice in samples["choices"]:
+                label = chr(ord('a') + i)
+                candidates.append(f"({label}) {choice}\n")
+                i += 1
+        else:
+            for sample in samples:
+                i = 0
+                temp = []
+                for choice in sample["choices"]:
+                    label = chr(ord('a') + i)
+                    temp.append(f"({label}) {choice}\n")
+                    i += 1
+                candidates.append(temp)
+        
         answers = model.predict_class(
             samples=samples,
-            candidates=self.answer_list,
+            candidates=candidates,
+            n_segments=1,
         )
         pred_qa_pairs = []
 
@@ -392,7 +410,7 @@ class ScienceQATask(VQATask):
             #     return
 
             pred = res["pred_ans"]
-            gt_ans = res["gt_ans"]
+            gt_ans = [res["gt_ans"]]
 
             num_match = sum([pred == gt for gt in gt_ans])
             vqa_acc = min(1.0, num_match / len(gt_ans))

@@ -20,12 +20,12 @@ datasets:
         image_size: 224
     text_processor:
       train:
-        name: "blip_question"
+        name: "instruct_blip_question"
       eval:
-        name: "blip_question"
-    build_info:
-      images:
-        storage: "lavis/scienceqa"
+        name: "instruct_blip_question"
+    # build_info:
+    #   images:
+    #     storage: "/root/InstructBLIP_PEFT/lavis/scienceqa"
 # vg_caption: # name of the dataset builder
 #   vis_processor:
 #       train:

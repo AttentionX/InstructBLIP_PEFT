@@ -474,21 +474,20 @@ class Blip2T5Instruct(Blip2Base):
 
             for i in range(samples["image"].size(0)):
                 this_sample = {
-                    "image": samples["image"][i].unsqueeze(0),
-                    "prompt": samples["prompt"],
+                    "image": samples["image"][i].unsqueeze(0)
                 }
 
                 if "text_input" in samples.keys():
                     this_sample["text_input"] = [samples["text_input"][i]]
 
-                if 'context' in samples.keys():
-                    this_sample['context'] = [samples["context"][i]]
+                # if 'context' in samples.keys():
+                #     this_sample['context'] = [samples["context"][i]]
 
-                if 'history' in samples.keys():
-                    this_sample['history'] = [samples["history"][i]]
+                # if 'history' in samples.keys():
+                #     this_sample['history'] = [samples["history"][i]]
 
-                if 'caption' in samples.keys():
-                    this_sample['caption'] = [samples["caption"][i]]
+                # if 'caption' in samples.keys():
+                #     this_sample['caption'] = [samples["caption"][i]]
 
                 this_result = self._predict_class(this_sample, candidates[i], n_segments)
                 results.append(this_result)
@@ -496,7 +495,9 @@ class Blip2T5Instruct(Blip2Base):
             try:
                 results = torch.cat(results, dim=0)
             except:
-                results = [res.tolist()[0] for res in results]
+                # results = [[a], [b], [c]] -> [a, b, c]
+                results = [res[0] for res in results]
+                pass
 
             return results
 
@@ -549,6 +550,8 @@ class Blip2T5Instruct(Blip2Base):
         #     prompt = [f'This image has the caption "{samples["caption"][i]}". {prompt[i]}' for i in range(len(prompt))]
         
         prompt = [samples['text_input'][i] for i in range(len(image))]
+        print(prompt)
+        print(prompt[0])
 
         query_tokens = self.query_tokens.expand(bs, -1, -1)
         if self.qformer_text_input:
@@ -675,6 +678,7 @@ class Blip2T5Instruct(Blip2Base):
 
             all_losses = torch.cat(all_losses, dim=-1)
             output_class_ranks = torch.argsort(all_losses, dim=-1)
+            top_predicted_classes = [candidates[idx] for idx in output_class_ranks[:, 0].tolist()]
 
             # encoder_outputs['last_hidden_state'] = encoder_outputs[0].repeat_interleave(n_cands, dim=0)
             # encoder_atts = encoder_atts.repeat_interleave(n_cands, dim=0)
@@ -697,7 +701,7 @@ class Blip2T5Instruct(Blip2Base):
             # loss = loss.reshape(bs, n_cands)
             # output_class_ranks = torch.argsort(loss, dim=-1) # (bs, num_candidates)
 
-        return output_class_ranks
+        return top_predicted_classes
 
     def _lemmatize(self, answers):
         def apply(answer):
