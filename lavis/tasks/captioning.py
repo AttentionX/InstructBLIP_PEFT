@@ -7,6 +7,7 @@
 
 import json
 import os
+import tempfile
 
 from lavis.common.dist_utils import main_process
 from lavis.common.registry import registry
@@ -85,7 +86,7 @@ class CaptionTask(BaseTask):
         coco_gt_root = os.path.join(registry.get_path("cache_root"), "coco_gt")
         coco_val = coco_caption_eval(coco_gt_root, eval_result_file, split_name)
 
-        agg_metrics = coco_val.eval["CIDEr"] + coco_val.eval["Bleu_4"]
+        agg_metrics = coco_val.eval["CIDEr"]
         log_stats = {split_name: {k: v for k, v in coco_val.eval.items()}}
 
         with open(
@@ -112,30 +113,30 @@ class Flickr30kCaptionTask(CaptionTask):
             min_length=self.min_len,
         )
 
-        img_names = samples["image_name"]
-        for caption, img_name in zip(captions, img_names):
-            results.append({"caption": caption, "image_name": img_name})
+        img_ids = samples["image_id"]
+        for caption, img_id in zip(captions, img_ids):
+            results.append({"caption": caption, "image_id": int(img_id)})
 
         return results
 
     def after_evaluation(self, val_result, split_name, epoch, **kwargs):
-        result_file = self.save_result(
+        eval_result_file = self.save_result(
             val_result,
             result_dir=registry.get_path("result_dir"),
             filename=f"{split_name}_flickr30k_caption_instruct_result_epoch{epoch}",
             remove_duplicate="",
         )
-        if split_name == 'val':
-            metrics = self._report_metrics(result_file=result_file, split=split_name)
+        if split_name == "val":
+            metrics = self._report_metrics(
+                eval_result_file=eval_result_file, split_name=split_name
+            )
         else:
-            metrics = None 
+            metrics = None
         return metrics
 
     @main_process
     def _report_metrics(self, eval_result_file, split_name):
-        # TODO better way to define this
-        coco_gt_root = os.path.join(registry.get_path("cache_root"), "coco_gt")
-        coco_val = coco_caption_eval(coco_gt_root, eval_result_file, split_name)
+        coco_val = flickr30k_caption_eval(eval_result_file, split_name)
 
         agg_metrics = coco_val.eval["CIDEr"] + coco_val.eval["Bleu_4"]
         log_stats = {split_name: {k: v for k, v in coco_val.eval.items()}}
@@ -191,3 +192,37 @@ def coco_caption_eval(coco_gt_root, results_file, split):
         print(f"{metric}: {score:.3f}")
 
     return coco_eval
+
+
+def flickr30k_caption_eval(results_file, split):
+    files = {
+        "val": "/input/flickr30k/annotations/val_gt.json",
+        "test": "/input/flickr30k/annotations/test_gt.json",
+    }
+    annotation_file = files[split]
+
+    flickr = COCO(annotation_file)
+    print(f"flickr: {annotation_file}")
+    print(f"results: {results_file}")
+    flickr_result = flickr.loadRes(results_file)
+
+    # create coco_eval object by taking flickr and flickr_result
+    flickr_eval = COCOEvalCap(flickr, flickr_result)
+
+    # evaluate on a subset of images by setting
+    flickr_eval.params[
+        "image_id"
+    ] = (
+        flickr_result.getImgIds()
+    )  # please remove this line when evaluating the full validation set
+
+    # Following InstructBlip paper, evaluate only on CIDEr
+    flickr_eval.params["metric"] = ["CIDEr"]
+    # evaluate results
+    flickr_eval.evaluate()
+
+    # print output evaluation scores
+    for metric, score in flickr_eval.eval.items():
+        print(f"{metric}: {score:.3f}")
+
+    return flickr_eval

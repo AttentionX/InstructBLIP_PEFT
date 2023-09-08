@@ -1,14 +1,17 @@
 import os
 import pandas as pd
 from PIL import Image
-import torch
+import re
 
 from lavis.datasets.datasets.base_dataset import BaseDataset
 from lavis.datasets.datasets.caption_datasets import CaptionDataset, CaptionEvalDataset
 
+img_id_pattern = r"\/([^\/.]*)\."
+
 
 class FlickrDataset(CaptionDataset):
     """Flickr30k caption dataset in instruction format"""
+
     def __getitem__(self, index):
         print("Flickr item!")
         ann = self.annotation[index]
@@ -27,11 +30,13 @@ class FlickrDataset(CaptionDataset):
         caption = ann["caption"]
         caption = self.text_processor(caption)
 
+        img_id = re.search(img_id_pattern, ann["image"]).group(1)
+
         return {
             "image": image,
             "text_input": instruction,
             "text_output": caption,
-            # "image_id": img_id,
+            "image_id": img_id,
         }
 
 
@@ -60,17 +65,21 @@ class FlickrEvalDataset(CaptionEvalDataset):
         caption = ann["caption"][0]  # ann["caption"] is a list of 5 possible captions
         caption = self.text_processor(caption)
 
+        img_id = re.search(img_id_pattern, ann["image"]).group(1)
+
         print("eval data")
         print(
             {
-                "image_name" : ann["image"],
+                # "image_name": ann["image"],
+                "image_id": img_id,
                 "text_input": instruction,
                 "text_output": caption,
             }
         )
         return {
             "image": image,
-            "image_name" : ann["image"],
+            # "image_name": ann["image"],
+            "image_id": img_id,
             "text_input": instruction,
             "text_output": caption,
         }
