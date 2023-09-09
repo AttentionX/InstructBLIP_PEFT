@@ -16,6 +16,7 @@ from lavis.processors.blip_processors import (
     Blip2ImageTrainProcessor,
     BlipImageEvalProcessor,
     BlipCaptionProcessor,
+    InstructBlipQuestionProcessor
 )
 from lavis.processors.blip_diffusion_processors import (
     BlipDiffusionInputImageProcessor,
@@ -39,6 +40,7 @@ __all__ = [
     "Blip2ImageTrainProcessor",
     "BlipImageEvalProcessor",
     "BlipCaptionProcessor",
+    "InstructBlipQuestionProcessor"
     # BLIP-Diffusion
     "BlipDiffusionInputImageProcessor",
     "BlipDiffusionTargetImageProcessor",

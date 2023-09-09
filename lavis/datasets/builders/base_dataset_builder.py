@@ -129,8 +129,6 @@ class BaseDatasetBuilder:
                 urls = [urls]
             if isinstance(storage_paths, str):
                 storage_paths = [storage_paths]
-            print(urls)
-            print(storage_paths)
             if urls is None:
                 urls = []
             if len(urls) != len(storage_paths):

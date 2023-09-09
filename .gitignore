@@ -158,3 +158,4 @@ cache/
 # datasets
 lavis/coco
 lavis/vg
+lavis/scienceqa
