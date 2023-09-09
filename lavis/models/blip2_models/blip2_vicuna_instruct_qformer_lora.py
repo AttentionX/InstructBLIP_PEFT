@@ -17,11 +17,13 @@ from lavis.models.blip2_models.blip2 import Blip2Base, disabled_train
 import lavis.models.blip2_models.Qformer_lora as Qformer_lora 
 from lavis.common.utils import is_url
 from lavis.common.dist_utils import download_cached_file
+from lavis.models.blip2_models.Qformer_lora import lora, custom_lora, mark_only_lora_as_trainable
 
 # Add LoRA Q-former here
 QFORMER_LORA = True 
 if QFORMER_LORA:
     Qformer_lora.lora()
+
 
 @registry.register_model("blip2_vicuna_instruct_qformer_lora")
 class Blip2VicunaInstructQformerLoRA(Blip2Base):
@@ -89,8 +91,7 @@ class Blip2VicunaInstructQformerLoRA(Blip2Base):
         self.Qformer.cls = None
         
         # Train only the Qformer LoRA
-        # if QFORMER_LORA:
-        #     Qformer_lora.mark_only_lora_as_trainable(self.Qformer)
+        mark_only_lora_as_trainable(self.Qformer)
         
         self.llm_tokenizer = LlamaTokenizer.from_pretrained(llm_model, use_fast=False, truncation_side="left")
         self.llm_model = LlamaForCausalLM.from_pretrained(
@@ -716,22 +717,37 @@ class Blip2VicunaInstructQformerLoRA(Blip2Base):
         apply_lemmatizer = cfg.get("apply_lemmatizer", False)
 
         qformer_text_input = cfg.get("qformer_text_input", True)
+        
+        ## If lora, with lora
+        r = cfg.get("lora_r", 8)
+        alpha = cfg.get("lora_alpha", 16)
+        dropout = cfg.get("lora_dropout", 0.05)
+        
+        BertSelfAttention_lora = cfg.get("selfattention_lora", False)
+        BertSelfOutput_lora = cfg.get("selfoutput_lora", False)
+        BertOutput_lora = cfg.get("bertoutput_lora", False)
+        
+        QFormerSelfAttention_lora_q = cfg.get("qformer_crossattention_lora_q", False)
+        QFormerSelfAttention_lora_k = cfg.get("qformer_crossattention_lora_k", False)
+        QFormerSelfAttention_lora_v = cfg.get("qformer_crossattention_lora_v", False)
 
-        model = cls(
-            vit_model=vit_model,
-            img_size=img_size,
-            drop_path_rate=drop_path_rate,
-            use_grad_checkpoint=use_grad_checkpoint,
-            vit_precision=vit_precision,
-            freeze_vit=freeze_vit,
-            num_query_token=num_query_token,
-            llm_model=llm_model,
-            prompt=prompt,
-            max_txt_len=max_txt_len,
-            max_output_txt_len=max_output_txt_len,
-            apply_lemmatizer=apply_lemmatizer,
-            qformer_text_input=qformer_text_input,
-        )
+        with lora(r, alpha, dropout, enable=BertSelfAttention_lora, qkv=[QFormerSelfAttention_lora_q, QFormerSelfAttention_lora_k, QFormerSelfAttention_lora_v]), custom_lora(r, alpha, dropout, enable=BertSelfOutput_lora, type="BertSelfOutput"), custom_lora(r, alpha, dropout, enable=BertOutput_lora, type="BertOutput"):
+            # Qformer = QformerModel.from_pretrained(llm_model)
+            model = cls(
+                vit_model=vit_model,
+                img_size=img_size,
+                drop_path_rate=drop_path_rate,
+                use_grad_checkpoint=use_grad_checkpoint,
+                vit_precision=vit_precision,
+                freeze_vit=freeze_vit,
+                num_query_token=num_query_token,
+                llm_model=llm_model,
+                prompt=prompt,
+                max_txt_len=max_txt_len,
+                max_output_txt_len=max_output_txt_len,
+                apply_lemmatizer=apply_lemmatizer,
+                qformer_text_input=qformer_text_input,
+            )
 
         # if qformer_text_input:
         #     # Hard-coded to load from BLIP-2 stage-1 pre-trained model (not ideal)

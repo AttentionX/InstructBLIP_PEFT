@@ -45,9 +45,6 @@ from transformers.modeling_utils import (
 from transformers.utils import logging
 from transformers.models.bert.configuration_bert import BertConfig
 
-# import lavis.models.blip2_models.Qformer_lora as Qformer_lora
-# from Qformer_lora import lora 
-
 
 logger = logging.get_logger(__name__)
 

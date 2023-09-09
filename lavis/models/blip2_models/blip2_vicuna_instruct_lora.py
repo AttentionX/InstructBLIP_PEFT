@@ -770,6 +770,7 @@ class Blip2VicunaInstructLoRA(Blip2Base):
             llm_lora_r=llm_lora_r,
             llm_lora_apply=llm_lora_apply
         )
+        
 
         # if qformer_text_input:
         #     # Hard-coded to load from BLIP-2 stage-1 pre-trained model (not ideal)
