@@ -341,6 +341,7 @@ class RunnerBase:
         # output_dir = lib_root / self.config.run_cfg.output_dir / self.job_id
         
         # fixed output_dir = /output/{output_dir}/{job_id}
+
         output_dir = Path(self.config.run_cfg.output_dir) / self.job_id
         result_dir = output_dir / "result"
 

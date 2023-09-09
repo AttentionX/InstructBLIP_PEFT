@@ -35,23 +35,24 @@ datasets:
   #       eval:
   #         name: "blip_caption"
 
+
   vizwiz:
     train_sample_rate: 0.05
     vis_processor:
         train:
           name: "blip2_image_train"
           image_size: 224
-        eval: 
-          name: "blip_image_eval"
-          image_size: 224 
-    text_processor:
-        train:
-          name: "blip_question"
         eval:
-          name: "blip_question"
-#     build_info:
-#         images:
-#             storage: '/export/share/datasets/vision/coco/images/'          
+          name: "blip2_image_train"
+          image_size: 224
+     text_processor:
+        train:
+          name: "blip_caption"
+        eval:
+          name: "blip_caption"
+    #  build_info:
+    #     images:
+    #       storage: 'lavis/flickr30k'          
   # vg_caption: # name of the dataset builder
   #   vis_processor:
   #       train:
@@ -65,12 +66,17 @@ datasets:
 #             storage: '//export/share/datasets/vision/visual-genome/image/'
 
 run:
-  task: vizwiz
+  task: flickr30k_instruct
   # optimizer
   lr_sched: "linear_warmup_cosine_lr"
   init_lr: 1e-4
   min_lr: 1e-5
   warmup_lr: 1e-6
+
+  # for cococapeval
+  num_beams: 5
+  max_len: 10
+  min_len: 1
   log_freq: 250
 
   weight_decay: 0.05
@@ -81,7 +87,7 @@ run:
   warmup_steps: 5000
 
   seed: 42
-  output_dir: "output/InstructBLIP/finetune"
+  output_dir: "/output/InstructBLIP/finetune"
 
   amp: True
   resume_ckpt_path: null
