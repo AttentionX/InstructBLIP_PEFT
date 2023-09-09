@@ -136,7 +136,8 @@ def build_dataloader(dataset,
         dataloader = PoolDataLoader
     elif dataloader_type == 'DataLoader':
         dataloader = DataLoader
-
+    print("shuffle")
+    print(shuffle)
     data_loader = dataloader(
         dataset,
         batch_size=batch_size,

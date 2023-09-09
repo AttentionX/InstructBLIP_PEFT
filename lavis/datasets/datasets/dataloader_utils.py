@@ -148,6 +148,7 @@ class IterLoader:
         except StopIteration:
             self._epoch += 1
             if hasattr(self._dataloader.sampler, "set_epoch") and self._use_distributed:
+                print("set epoch")
                 self._dataloader.sampler.set_epoch(self._epoch)
             time.sleep(2)  # Prevent possible deadlock during epoch transition
             self.iter_loader = iter(self._dataloader)

@@ -75,8 +75,6 @@ class VQAEval_Vizwiz:
 			imgs = [img for img in self.params['images']]
 		gts = {}
 		res = {}
-		print("imgs")
-		print(imgs)
 		for img in imgs:
 			gts[img] = self.vqa.imgToQA[img]
 			res[img] = self.vqaRes.imgToQA[img]
@@ -226,11 +224,11 @@ class VQAEval_Vizwiz:
 
 
 
-from .pycocoevalcap.tokenizer.ptbtokenizer import PTBTokenizer
-from .pycocoevalcap.bleu.bleu import Bleu
-from .pycocoevalcap.meteor.meteor import Meteor
-from .pycocoevalcap.rouge.rouge import Rouge
-from .pycocoevalcap.cider.cider import Cider
+from pycocoevalcap.tokenizer.ptbtokenizer import PTBTokenizer
+from pycocoevalcap.bleu.bleu import Bleu
+from pycocoevalcap.meteor.meteor import Meteor
+from pycocoevalcap.rouge.rouge import Rouge
+from pycocoevalcap.cider.cider import Cider
 
 class COCOEvalCap:
     def __init__(self,images,gts,res):
