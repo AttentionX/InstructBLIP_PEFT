@@ -549,7 +549,7 @@ class RunnerBase:
                         sampler = sampler if is_train else None
                 else:
                     sampler = None
-
+                    
                 loader = DataLoader(
                     dataset,
                     batch_size=bsz,

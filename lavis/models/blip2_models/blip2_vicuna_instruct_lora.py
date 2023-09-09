@@ -127,7 +127,7 @@ class Blip2VicunaInstructLoRA(Blip2Base):
         lora_config = LoraConfig(
             r=4,
             lora_alpha=2,
-            target_modules=_find_all_linear_names(self.llm_model),
+            target_modules=['q', 'v'],
             # lora_dropout=training_args.lora_dropout,
             # bias=training_args.lora_bias,
             task_type="CAUSAL_LM",

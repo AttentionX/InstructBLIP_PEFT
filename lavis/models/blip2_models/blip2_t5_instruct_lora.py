@@ -27,7 +27,7 @@ from lavis.common.utils import is_url
 from lavis.common.dist_utils import download_cached_file
 
 # Add LoRA Q-former here
-QFORMER_LORA = True  
+QFORMER_LORA = False  
 if QFORMER_LORA:
     Qformer_lora.lora()
 
@@ -133,7 +133,7 @@ class Blip2T5InstructLoRA(Blip2Base):
         lora_config = LoraConfig(
             r=1,
             lora_alpha=2,
-            target_modules=_find_all_linear_names(self.t5_model),
+            target_modules= ['q','v'],#_find_all_linear_names(self.t5_model),
             # lora_dropout=training_args.lora_dropout,
             # bias=training_args.lora_bias,
             task_type="SEQ_2_SEQ_LM",
