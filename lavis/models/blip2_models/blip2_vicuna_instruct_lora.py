@@ -56,6 +56,8 @@ class Blip2VicunaInstructLoRA(Blip2Base):
         max_output_txt_len=256,
         apply_lemmatizer=False,
         qformer_text_input=True,
+        llm_lora_r=8,
+        llm_lora_apply="attn",
     ):
         super().__init__()
         transformers_version = version.parse(transformers.__version__)
@@ -123,11 +125,18 @@ class Blip2VicunaInstructLoRA(Blip2Base):
             # if 'lm_head' in lora_module_names: # needed for 16-bit
             #     lora_module_names.remove('lm_head')
             return list(lora_module_names)
-        
+        target_modules = []
+        if llm_lora_apply == "attn":
+            target_modules = ['q_proj','v_proj'] 
+        elif llm_lora_apply == "ffn":
+            target_modules = ['gate_proj', "up_proj", "down_proj"]
+        else: 
+            print("Wrong llm_lora_apply value in yaml!!")
+        print(f"applying llm lora on {llm_lora_apply}")
         lora_config = LoraConfig(
-            r=4,
-            lora_alpha=2,
-            target_modules=_find_all_linear_names(self.llm_model),
+            r=llm_lora_r,
+            lora_alpha=8,
+            target_modules=target_modules,
             # lora_dropout=training_args.lora_dropout,
             # bias=training_args.lora_bias,
             task_type="CAUSAL_LM",
@@ -741,6 +750,9 @@ class Blip2VicunaInstructLoRA(Blip2Base):
 
         qformer_text_input = cfg.get("qformer_text_input", True)
 
+        llm_lora_r = cfg.get("llm_lora_r", 8)
+        llm_lora_apply = cfg.get("llm_lora_apply", "attn") 
+
         model = cls(
             vit_model=vit_model,
             img_size=img_size,
@@ -755,6 +767,8 @@ class Blip2VicunaInstructLoRA(Blip2Base):
             max_output_txt_len=max_output_txt_len,
             apply_lemmatizer=apply_lemmatizer,
             qformer_text_input=qformer_text_input,
+            llm_lora_r=llm_lora_r,
+            llm_lora_apply=llm_lora_apply
         )
 
         # if qformer_text_input:

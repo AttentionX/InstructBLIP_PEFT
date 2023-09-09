@@ -225,7 +225,12 @@ class BaseDatasetBuilder:
             ann_paths = abs_ann_paths
 
             # visual data storage path
-            vis_path = vis_info.storage
+            if split == "train":
+                vis_path = vis_info.train.storage 
+            if split == "val":
+                vis_path = vis_info.val.storage 
+            if split == "test":
+                vis_path = vis_info.test.storage 
 
             if not os.path.isabs(vis_path):
                 # vis_path = os.path.join(utils.get_cache_path(), vis_path)
