@@ -200,7 +200,6 @@ class Blip2T5Instruct(Blip2Base):
                 labels=targets,
             )
             loss = outputs.loss
-
             return {"loss": loss}
 
     def prepare_few_shot_embeds(self, samples):
@@ -488,6 +487,8 @@ class Blip2T5Instruct(Blip2Base):
 
                 # if 'caption' in samples.keys():
                 #     this_sample['caption'] = [samples["caption"][i]]
+
+                
 
                 this_result = self._predict_class(this_sample, candidates[i], n_segments)
                 results.append(this_result)

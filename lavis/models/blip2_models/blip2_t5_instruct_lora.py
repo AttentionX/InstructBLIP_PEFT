@@ -27,7 +27,7 @@ from lavis.common.utils import is_url
 from lavis.common.dist_utils import download_cached_file
 
 # Add LoRA Q-former here
-QFORMER_LORA = True  
+QFORMER_LORA = False  
 if QFORMER_LORA:
     Qformer_lora.lora()
 
@@ -66,6 +66,8 @@ class Blip2T5InstructLoRA(Blip2Base):
         num_few_shot_examples=0,
         few_shot_prob=0,
         qformer_text_input=True,
+        llm_lora_r=8,
+        llm_lora_apply="attn",
     ):
         """
         apply_lemmatizer: when set to True, postprocess predict_answers() result with lemmas.
@@ -130,10 +132,18 @@ class Blip2T5InstructLoRA(Blip2Base):
             #     lora_module_names.remove('lm_head')
             return list(lora_module_names)
         
+        target_modules = []
+        if llm_lora_apply == "attn":
+            target_modules = ['q','v'] 
+        elif llm_lora_apply == "ffn":
+            target_modules = ["wi", "wo", "wi_1", "wi_0"]
+        else: 
+            print("Wrong llm_lora_apply value in yaml!!")
+        print(f"applying llm lora on {llm_lora_apply}")
         lora_config = LoraConfig(
-            r=1,
-            lora_alpha=2,
-            target_modules=_find_all_linear_names(self.t5_model),
+            r=llm_lora_r,
+            lora_alpha=8,
+            target_modules=target_modules, #_find_all_linear_names(self.t5_model),
             # lora_dropout=training_args.lora_dropout,
             # bias=training_args.lora_bias,
             task_type="SEQ_2_SEQ_LM",
@@ -796,6 +806,9 @@ class Blip2T5InstructLoRA(Blip2Base):
         few_shot_prob = cfg.get("few_shot_prob", 0.0)
 
         qformer_text_input = cfg.get("qformer_text_input", True)
+
+        llm_lora_r = cfg.get("llm_lora_r", 8)
+        llm_lora_apply = cfg.get("llm_lora_apply", "attn") 
         
         # TODO: if you want to control PEFT by config, you should add some varaibles here
 
@@ -815,6 +828,8 @@ class Blip2T5InstructLoRA(Blip2Base):
             num_few_shot_examples=num_few_shot_examples,
             few_shot_prob=few_shot_prob,
             qformer_text_input=qformer_text_input,
+            llm_lora_r=llm_lora_r,
+            llm_lora_apply=llm_lora_apply
         )
 
         # if qformer_text_input:

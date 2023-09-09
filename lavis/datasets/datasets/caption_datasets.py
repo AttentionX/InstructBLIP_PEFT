@@ -50,6 +50,8 @@ class CaptionDataset(BaseDataset, __DisplMixin):
         image = Image.open(image_path).convert("RGB")
 
         image = self.vis_processor(image)
+        import random
+        idx = random.randint(0, len(ann["caption"]) - 1)
         caption = self.text_processor(ann["caption"])
 
        
@@ -79,9 +81,21 @@ class CaptionEvalDataset(BaseDataset, __DisplMixin):
         image = Image.open(image_path).convert("RGB")
 
         image = self.vis_processor(image)
+        idx = 0
+        caption = self.text_processor(ann["caption"][idx])
+        print("eval dataset")
 
+        print({
+            "image": image,
+            "image_id": ann["image_id"],
+            "instance_id": ann["instance_id"],
+            "text_input": caption,
+            "text_output" : caption,
+        })
         return {
             "image": image,
             "image_id": ann["image_id"],
             "instance_id": ann["instance_id"],
+            "text_input": caption,
+            "text_output" : caption,
         }

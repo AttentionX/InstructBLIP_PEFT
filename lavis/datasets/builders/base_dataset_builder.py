@@ -36,6 +36,7 @@ class BaseDatasetBuilder:
             self.config = cfg
 
         self.data_type = self.config.data_type
+        self.train_sample_rate = self.config.train_sample_rate
 
         self.vis_processors = {"train": BaseProcessor(), "eval": BaseProcessor()}
         self.text_processors = {"train": BaseProcessor(), "eval": BaseProcessor()}
@@ -128,7 +129,6 @@ class BaseDatasetBuilder:
                 urls = [urls]
             if isinstance(storage_paths, str):
                 storage_paths = [storage_paths]
-            
             if urls is None:
                 urls = []
             if len(urls) != len(storage_paths):
@@ -190,6 +190,8 @@ class BaseDatasetBuilder:
         vis_info = build_info.get(self.data_type)
 
         datasets = dict()
+        print("get keys data")
+        print(ann_info.keys())
         for split in ann_info.keys():
             if split not in ["train", "val", "test"]:
                 continue
@@ -221,7 +223,12 @@ class BaseDatasetBuilder:
             ann_paths = abs_ann_paths
 
             # visual data storage path
-            vis_path = vis_info.storage
+            if split == "train":
+                vis_path = vis_info.train.storage 
+            if split == "val":
+                vis_path = vis_info.val.storage 
+            if split == "test":
+                vis_path = vis_info.test.storage 
 
             if not os.path.isabs(vis_path):
                 # vis_path = os.path.join(utils.get_cache_path(), vis_path)
@@ -232,12 +239,21 @@ class BaseDatasetBuilder:
 
             # create datasets
             dataset_cls = self.train_dataset_cls if is_train else self.eval_dataset_cls
-            datasets[split] = dataset_cls(
-                vis_processor=vis_processor,
-                text_processor=text_processor,
-                ann_paths=ann_paths,
-                vis_root=vis_path,
-            )
+            if is_train:
+                datasets[split] = dataset_cls(
+                    vis_processor=vis_processor,
+                    text_processor=text_processor,
+                    ann_paths=ann_paths,
+                    vis_root=vis_path,
+                    train_sample_rate=self.train_sample_rate 
+                )
+            else:
+                datasets[split] = dataset_cls(
+                    vis_processor=vis_processor,
+                    text_processor=text_processor,
+                    ann_paths=ann_paths,
+                    vis_root=vis_path,
+                )
 
         return datasets
 
