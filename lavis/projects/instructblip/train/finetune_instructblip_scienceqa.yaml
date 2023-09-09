@@ -11,6 +11,7 @@ model:
 
 datasets:
   scienceqa:
+    train_sample_rate: 0.5
     vis_processor:
       train:
         name: "blip2_image_train"
@@ -57,7 +58,7 @@ run:
   inference_method: "rank"
 
   seed: 42
-  output_dir: "/output/InstructBLIP/finetune_sceinceqa"
+  output_dir: "output/InstructBLIP/finetune_sceinceqa"
 
   amp: True
   resume_ckpt_path: null

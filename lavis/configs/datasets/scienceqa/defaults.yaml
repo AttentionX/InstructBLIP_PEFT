@@ -14,3 +14,9 @@ datasets:
           storage: scienceqa/scienceqa_test.json
       images:
         storage: .
+        train:
+          storage: .
+        val:
+          storage: .
+        test:
+          storage: .

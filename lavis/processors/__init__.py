@@ -40,7 +40,7 @@ __all__ = [
     "Blip2ImageTrainProcessor",
     "BlipImageEvalProcessor",
     "BlipCaptionProcessor",
-    "InstructBlipQuestionProcessor"
+    "InstructBlipQuestionProcessor",
     # BLIP-Diffusion
     "BlipDiffusionInputImageProcessor",
     "BlipDiffusionTargetImageProcessor",

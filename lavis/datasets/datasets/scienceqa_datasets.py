@@ -31,13 +31,14 @@ class __DisplMixin:
         )
         
 class ScienceQADataset(BaseDataset):
-    def __init__(self, vis_processor, text_processor, vis_root, ann_paths):
+    def __init__(self, vis_processor, text_processor, vis_root, ann_paths, train_sample_rate=1):
         super().__init__(vis_processor, text_processor, vis_root, ann_paths=[])
         self.annotation = []
         for ann in ann_paths:
             # self.annotation.extend(pd.read_parquet(ann))
             self.annotation = pd.read_json(ann)
-            
+
+        self.annotation = self.annotation.sample(frac=train_sample_rate)
         # answer_list for vocabulary ranking method
         self.answer_list = ["(a)", "(b)", "(c)", "(d)", "(e)"]
         
@@ -161,7 +162,7 @@ class ScienceQAEvalDataset(VQAEvalDataset, __DisplMixin):
         text_input = self.get_text_input(ann)
         text_input = self.text_processor(text_input)
         
-        print(self.text_processor)
+        # print(self.text_processor)
 
         answer = ann["answer"]
         # print({
