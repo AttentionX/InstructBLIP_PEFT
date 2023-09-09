@@ -8,26 +8,19 @@ import logging
 import string
 import random
 import copy
+import os
 
 import torch
 import torch.nn as nn
 from torch.cuda.amp import autocast as autocast
 from transformers import T5TokenizerFast
 
-import transformers
-from peft import LoraConfig, get_peft_model
-
 from lavis.common.registry import registry
 from lavis.models.blip2_models.blip2 import Blip2Base, disabled_train
 from lavis.models.blip2_models.modeling_t5 import T5Config, T5ForConditionalGeneration
 from transformers.modeling_outputs import BaseModelOutput
-import lavis.models.blip2_models.Qformer_lora as Qformer_lora 
-
-# Add LoRA Q-former here
-QFORMER_LORA = True  
-if QFORMER_LORA:
-    Qformer_lora.lora()
-
+from lavis.common.utils import is_url
+from lavis.common.dist_utils import download_cached_file
 
 @registry.register_model("blip2_t5_instruct")
 class Blip2T5Instruct(Blip2Base):
@@ -94,9 +87,7 @@ class Blip2T5Instruct(Blip2Base):
         else:
             self.Qformer.resize_token_embeddings(len(self.tokenizer))
         self.Qformer.cls = None
-        # Train only the Qformer LoRA
-        if QFORMER_LORA:
-            Qformer_lora.mark_only_lora_as_trainable(self.Qformer)
+
         self.t5_tokenizer = T5TokenizerFast.from_pretrained(t5_model, truncation_side='left')
         self.t5_output_tokenizer = T5TokenizerFast.from_pretrained(t5_model, truncation_side='right')
 
@@ -107,9 +98,8 @@ class Blip2T5Instruct(Blip2Base):
         )
 
         for name, param in self.t5_model.named_parameters():
-            param.requires_grad = False 
+            param.requires_grad = False
             param.data = param.data.bfloat16()
-
 
         self.t5_proj = nn.Linear(
             self.Qformer.config.hidden_size, self.t5_model.config.hidden_size
@@ -210,7 +200,6 @@ class Blip2T5Instruct(Blip2Base):
                 labels=targets,
             )
             loss = outputs.loss
-
             return {"loss": loss}
 
     def prepare_few_shot_embeds(self, samples):
@@ -484,21 +473,22 @@ class Blip2T5Instruct(Blip2Base):
 
             for i in range(samples["image"].size(0)):
                 this_sample = {
-                    "image": samples["image"][i].unsqueeze(0),
-                    "prompt": samples["prompt"],
+                    "image": samples["image"][i].unsqueeze(0)
                 }
 
                 if "text_input" in samples.keys():
                     this_sample["text_input"] = [samples["text_input"][i]]
 
-                if 'context' in samples.keys():
-                    this_sample['context'] = [samples["context"][i]]
+                # if 'context' in samples.keys():
+                #     this_sample['context'] = [samples["context"][i]]
 
-                if 'history' in samples.keys():
-                    this_sample['history'] = [samples["history"][i]]
+                # if 'history' in samples.keys():
+                #     this_sample['history'] = [samples["history"][i]]
 
-                if 'caption' in samples.keys():
-                    this_sample['caption'] = [samples["caption"][i]]
+                # if 'caption' in samples.keys():
+                #     this_sample['caption'] = [samples["caption"][i]]
+
+                
 
                 this_result = self._predict_class(this_sample, candidates[i], n_segments)
                 results.append(this_result)
@@ -506,7 +496,9 @@ class Blip2T5Instruct(Blip2Base):
             try:
                 results = torch.cat(results, dim=0)
             except:
-                results = [res.tolist()[0] for res in results]
+                # results = [[a], [b], [c]] -> [a, b, c]
+                results = [res[0] for res in results]
+                pass
 
             return results
 
@@ -532,31 +524,35 @@ class Blip2T5Instruct(Blip2Base):
         """
 
         image = samples["image"]
-        prompt = samples["prompt"]
+        # prompt = samples["prompt"]
 
         bs = image.size(0)
 
-        if isinstance(prompt, str):
-            prompt = [prompt] * bs
-        else:
-            assert len(prompt) == bs, "The number of prompts must be equal to the batch size."
+        # if isinstance(prompt, str):
+        #     prompt = [prompt] * bs
+        # else:
+        #     assert len(prompt) == bs, "The number of prompts must be equal to the batch size."
 
-        if "text_input" in samples.keys():
-            if type(samples["text_input"][0]) == list:
-                prompt = [prompt[i].format(*samples["text_input"][i]) for i in range(len(prompt))]
-            else:
-                prompt = [prompt[i].format(samples["text_input"][i]) for i in range(len(prompt))]
+        # if "text_input" in samples.keys():
+        #     if type(samples["text_input"][0]) == list:
+        #         prompt = [prompt[i].format(*samples["text_input"][i]) for i in range(len(prompt))]
+        #     else:
+        #         prompt = [prompt[i].format(samples["text_input"][i]) for i in range(len(prompt))]
 
-        # scienceqa
-        if 'context' in samples.keys() and samples['context'] != '':
-            prompt = [f'context: {samples["context"][i]}. {prompt[i]}' for i in range(len(prompt))]
+        # # scienceqa
+        # if 'context' in samples.keys() and samples['context'] != '':
+        #     prompt = [f'context: {samples["context"][i]}. {prompt[i]}' for i in range(len(prompt))]
 
-        # visual dialog
-        if 'history' in samples.keys() and samples['history'][0] != '':
-            prompt = [f'dialog history: {samples["history"][i]}\n{prompt[i]}' for i in range(len(prompt))]
+        # # visual dialog
+        # if 'history' in samples.keys() and samples['history'][0] != '':
+        #     prompt = [f'dialog history: {samples["history"][i]}\n{prompt[i]}' for i in range(len(prompt))]
 
-        if 'caption' in samples.keys() and samples['caption'][0] != '':
-            prompt = [f'This image has the caption "{samples["caption"][i]}". {prompt[i]}' for i in range(len(prompt))]
+        # if 'caption' in samples.keys() and samples['caption'][0] != '':
+        #     prompt = [f'This image has the caption "{samples["caption"][i]}". {prompt[i]}' for i in range(len(prompt))]
+        
+        prompt = [samples['text_input'][i] for i in range(len(image))]
+        print(prompt)
+        print(prompt[0])
 
         query_tokens = self.query_tokens.expand(bs, -1, -1)
         if self.qformer_text_input:
@@ -683,6 +679,7 @@ class Blip2T5Instruct(Blip2Base):
 
             all_losses = torch.cat(all_losses, dim=-1)
             output_class_ranks = torch.argsort(all_losses, dim=-1)
+            top_predicted_classes = [candidates[idx] for idx in output_class_ranks[:, 0].tolist()]
 
             # encoder_outputs['last_hidden_state'] = encoder_outputs[0].repeat_interleave(n_cands, dim=0)
             # encoder_atts = encoder_atts.repeat_interleave(n_cands, dim=0)
@@ -705,7 +702,7 @@ class Blip2T5Instruct(Blip2Base):
             # loss = loss.reshape(bs, n_cands)
             # output_class_ranks = torch.argsort(loss, dim=-1) # (bs, num_candidates)
 
-        return output_class_ranks
+        return top_predicted_classes
 
     def _lemmatize(self, answers):
         def apply(answer):
@@ -794,3 +791,27 @@ class Blip2T5Instruct(Blip2Base):
         model.load_checkpoint_from_config(cfg)
 
         return model
+
+    def load_from_pretrained(self, url_or_filename):
+        if is_url(url_or_filename):
+            cached_file = download_cached_file(
+                url_or_filename, check_hash=False, progress=True
+            )
+            checkpoint = torch.load(cached_file, map_location="cpu")
+        elif os.path.isfile(url_or_filename):
+            checkpoint = torch.load(url_or_filename, map_location="cpu")
+        else:
+            raise RuntimeError("checkpoint url or path is invalid")
+
+        if "model" in checkpoint:
+            state_dict = checkpoint["model"]
+        else:
+            state_dict = checkpoint
+
+        # strict=False for peft layers
+        msg = self.load_state_dict(state_dict, strict=False)
+
+        # logging.info("Missing keys {}".format(msg.missing_keys))
+        logging.info("load checkpoint from %s" % url_or_filename)
+
+        return msg

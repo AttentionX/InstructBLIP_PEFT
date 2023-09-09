@@ -75,8 +75,6 @@ class VQAEval_Vizwiz:
 			imgs = [img for img in self.params['images']]
 		gts = {}
 		res = {}
-		print("imgs")
-		print(imgs)
 		for img in imgs:
 			gts[img] = self.vqa.imgToQA[img]
 			res[img] = self.vqaRes.imgToQA[img]

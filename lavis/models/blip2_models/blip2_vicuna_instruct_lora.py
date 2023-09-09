@@ -11,15 +11,21 @@ from torch.cuda.amp import autocast as autocast
 import torch.nn as nn
 
 import transformers
+from peft import LoraConfig, get_peft_model
 
 from lavis.common.registry import registry
 from lavis.models.blip2_models.blip2 import Blip2Base, disabled_train
-from lavis.common.utils import get_abs_path, is_url
+from lavis.common.utils import is_url
 from lavis.common.dist_utils import download_cached_file
 
+# Add LoRA Q-former here
+QFORMER_LORA = False 
+if QFORMER_LORA:
+    import Qformer_lora
+    Qformer_lora.lora()
 
-@registry.register_model("blip2_vicuna_instruct")
-class Blip2VicunaInstruct(Blip2Base):
+@registry.register_model("blip2_vicuna_instruct_lora")
+class Blip2VicunaInstructLoRA(Blip2Base):
     """
     BLIP2 Vicuna model.
     Supported model types:
@@ -31,8 +37,8 @@ class Blip2VicunaInstruct(Blip2Base):
     """
 
     PRETRAINED_MODEL_CONFIG_DICT = {
-        "vicuna7b": "configs/models/blip2/blip2_instruct_vicuna7b.yaml",
-        "vicuna13b": "configs/models/blip2/blip2_instruct_vicuna13b.yaml",
+        "vicuna7b": "configs/models/blip2/blip2_instruct_vicuna7b_lora.yaml",
+        "vicuna13b": "configs/models/blip2/blip2_instruct_vicuna13b_lora.yaml",
     }
 
     def __init__(
@@ -50,6 +56,8 @@ class Blip2VicunaInstruct(Blip2Base):
         max_output_txt_len=256,
         apply_lemmatizer=False,
         qformer_text_input=True,
+        llm_lora_r=8,
+        llm_lora_apply="attn",
     ):
         super().__init__()
         transformers_version = version.parse(transformers.__version__)
@@ -82,7 +90,11 @@ class Blip2VicunaInstruct(Blip2Base):
         else:
             self.Qformer.resize_token_embeddings(len(self.tokenizer))
         self.Qformer.cls = None
-
+        
+        # Train only the Qformer LoRA
+        # if QFORMER_LORA:
+        #     Qformer_lora.mark_only_lora_as_trainable(self.Qformer)
+        
         self.llm_tokenizer = LlamaTokenizer.from_pretrained(llm_model, use_fast=False, truncation_side="left")
         self.llm_model = LlamaForCausalLM.from_pretrained(
             llm_model, torch_dtype=torch.float16
@@ -101,6 +113,36 @@ class Blip2VicunaInstruct(Blip2Base):
 
         for name, param in self.llm_model.named_parameters():
             param.requires_grad = False
+        
+        def _find_all_linear_names(model):
+            cls = torch.nn.Linear
+            lora_module_names = set()
+            for name, module in model.named_modules():
+                if isinstance(module, cls):
+                    names = name.split('.')
+                    lora_module_names.add(names[0] if len(names) == 1 else names[-1])
+
+            # if 'lm_head' in lora_module_names: # needed for 16-bit
+            #     lora_module_names.remove('lm_head')
+            return list(lora_module_names)
+        target_modules = []
+        if llm_lora_apply == "attn":
+            target_modules = ['q_proj','v_proj'] 
+        elif llm_lora_apply == "ffn":
+            target_modules = ['gate_proj', "up_proj", "down_proj"]
+        else: 
+            print("Wrong llm_lora_apply value in yaml!!")
+        print(f"applying llm lora on {llm_lora_apply}")
+        lora_config = LoraConfig(
+            r=llm_lora_r,
+            lora_alpha=8,
+            target_modules=target_modules,
+            # lora_dropout=training_args.lora_dropout,
+            # bias=training_args.lora_bias,
+            task_type="CAUSAL_LM",
+        )
+        self.llm_model = get_peft_model(self.llm_model, lora_config)
+        self.llm_model.print_trainable_parameters()
 
         self.llm_proj = nn.Linear(
             self.Qformer.config.hidden_size, self.llm_model.config.hidden_size
@@ -708,6 +750,9 @@ class Blip2VicunaInstruct(Blip2Base):
 
         qformer_text_input = cfg.get("qformer_text_input", True)
 
+        llm_lora_r = cfg.get("llm_lora_r", 8)
+        llm_lora_apply = cfg.get("llm_lora_apply", "attn") 
+
         model = cls(
             vit_model=vit_model,
             img_size=img_size,
@@ -722,6 +767,8 @@ class Blip2VicunaInstruct(Blip2Base):
             max_output_txt_len=max_output_txt_len,
             apply_lemmatizer=apply_lemmatizer,
             qformer_text_input=qformer_text_input,
+            llm_lora_r=llm_lora_r,
+            llm_lora_apply=llm_lora_apply
         )
 
         # if qformer_text_input:
@@ -750,37 +797,6 @@ class Blip2VicunaInstruct(Blip2Base):
         else:
             state_dict = checkpoint
 
-        # # if name of paramter is different with the code name,
-        # # ex) bert.embeddings.word_embeddings.weight in state_dict = embeddings.word_embeddings.weight in code
-        # # we need to change the name of parameter
-        
-        # # example code from albef_vqa
-        
-        # for key in list(state_dict.keys()):
-        #     if "bert" in key:
-        #         encoder_key = key.replace("bert.", "")
-        #         state_dict[encoder_key] = state_dict[key]
-
-        #     # intialize text decoder as multimodal encoder (last 6 layers of model.text_encoder)
-        #     if "text_encoder" in key:
-        #         if "layer" in key:
-        #             encoder_keys = key.split(".")
-        #             layer_num = int(encoder_keys[4])
-
-        #             if layer_num < 6:
-        #                 del state_dict[key]
-        #                 continue
-        #             else:
-        #                 decoder_layer_num = layer_num - 6
-        #                 encoder_keys[4] = str(decoder_layer_num)
-        #                 encoder_key = ".".join(encoder_keys)
-        #         else:
-        #             encoder_key = key
-        #         decoder_key = encoder_key.replace("text_encoder", "text_decoder")
-        #         state_dict[decoder_key] = state_dict[key]
-
-        #         del state_dict[key]
-        
         # strict=False for peft layers
         msg = self.load_state_dict(state_dict, strict=False)
 

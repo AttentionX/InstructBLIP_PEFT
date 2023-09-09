@@ -21,6 +21,8 @@ from lavis.tasks import *
 root_dir = os.path.dirname(os.path.abspath(__file__))
 default_cfg = OmegaConf.load(os.path.join(root_dir, "configs/default.yaml"))
 
+# It makes output directory "lavis/output" by default
+# However, If change this, all of absolute path will be changed. It will make error to get yaml files.
 registry.register_path("library_root", root_dir)
 repo_root = os.path.join(root_dir, "..")
 registry.register_path("repo_root", repo_root)

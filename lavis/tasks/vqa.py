@@ -8,7 +8,7 @@
 import logging
 import json
 import os
-
+import torch
 import lavis.common.dist_utils as dist_utils
 from lavis.common.registry import registry
 from lavis.common.vqa_tools.vqa import VQA
@@ -315,6 +315,115 @@ class AOKVQATask(VQATask):
 
         logging.info(f"Saved results for leaderboard evaluation at {result_file}")
 
+@registry.register_task("scienceqa")
+class ScienceQATask(VQATask):
+
+    def build_datasets(self, cfg):
+        datasets = super().build_datasets(cfg)
+
+        # get question file, annotation file and anwser list in COCO format
+        for dataset in datasets.values():
+            for split in dataset:
+                try:
+                    self.answer_list = dataset[split].answer_list
+                except AttributeError:
+                    # if answer_list is not provided, then set it to None
+                    pass
+
+        if len(self.ques_files) > 0:
+            assert len(self.ques_files) == len(
+                self.anno_files
+            ), "Only support one split for evaluation."
+
+        return datasets
+
+    def valid_step(self, model, samples):
+        # make predicted answers
+        # answers = model.predict_answers(
+        #     samples=samples,
+        #     answer_list=self.answer_list,
+        #     inference_method=self.inference_method,
+        #     num_beams=self.num_beams,
+        #     max_len=self.max_len,
+        #     min_len=self.min_len,
+        #     num_ans_candidates=self.num_ans_candidates,
+        #     prompt=self.prompt,
+        # )
+        candidates = []
+        if not isinstance(samples, list):
+            i = 0
+            for choice in samples["choices"][0]:
+                label = chr(ord('a') + i)
+                candidates.append(f"({label}) {choice}")
+                i += 1
+        else:
+            candidates = samples['choices']
+        
+        answers = model.predict_class(
+            samples=samples,
+            candidates=candidates,
+            n_segments=1,
+        )
+        pred_qa_pairs = []
+
+
+        question_id = samples["question_id"]
+        gt_answers = samples["answer"]
+        # img_names = samples["image_name"]
+        for pred_answer, ques_id, gt_answer in zip(answers, question_id, gt_answers):
+            # ques_id = int(ques_id)
+            pred_qa_pairs.append({"question_id": ques_id, "pred_ans": pred_answer, "gt_ans": gt_answer})
+
+        return pred_qa_pairs
+
+    def after_evaluation(self, val_result, split_name, **kwargs):
+        result_file = self.save_result(
+            val_result,
+            result_dir=registry.get_path("result_dir"),
+            filename=f"{split_name}_scienceqa_result",
+            remove_duplicate="",
+        )
+        if split_name == 'val':
+            metrics = self._report_metrics(result_file=result_file, split=split_name)
+        else:
+            metrics = None 
+        return metrics
+
+    @dist_utils.main_process
+    def _report_metrics(self, result_file, split):
+        # scienceQA metric is easy
+        # just check if the predicted answer is the ground truth answer
+
+        results = json.load(open(result_file, "r"))
+        acc = []
+
+        for res in results:
+            # if res["gt_ans"] is None:
+            #     # prepare test results for leaderboard evaluation
+            #     self._save_result_leaderboard(results)
+            #     return
+
+            pred = res["pred_ans"]
+            gt_ans = [res["gt_ans"]]
+
+            num_match = sum([pred == gt for gt in gt_ans])
+            vqa_acc = min(1.0, num_match / len(gt_ans))
+
+            acc.append(vqa_acc)
+
+        accuracy = sum(acc) / len(acc) * 100
+        metrics = {"agg_metrics": accuracy, "acc": accuracy}
+
+        with open(
+            os.path.join(registry.get_path("output_dir"), f"log.txt"), "a"
+        ) as f:
+            f.write(json.dumps(metrics) + "\n")
+
+        logging.info(metrics)
+
+        return metrics
+      
+
 @registry.register_task("vizwiz")
 class VizWizTask(VQATask):
 
@@ -336,7 +445,21 @@ class VizWizTask(VQATask):
             ), "Only support one split for evaluation."
 
         return datasets
+    
+    def train_step(self, model, samples):
+        txtout = []
+        for i in range(len(samples["text_output"])):
+            txtout.extend(samples["text_output"][i])
+        sample_final = {"image" : torch.cat([samples["image"]] *10 ), "text_input": samples["text_input"]*10, "text_output": txtout}
+    
+        output = model(sample_final)
+        loss_dict = {}
+        for k,v in output.items():
+            if "loss" in k:
+                loss_dict[k] = v
 
+        return output["loss"], loss_dict
+    
     def valid_step(self, model, samples):
         answers = model.predict_answers(
             samples=samples,

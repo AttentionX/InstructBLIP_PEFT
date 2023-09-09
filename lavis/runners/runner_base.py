@@ -331,7 +331,16 @@ class RunnerBase:
         return train_dataloader
 
     def setup_output_dir(self):
+        """
+        This makes output_dir = "lavis/output/{output_dir}/{job_id}" by default.
+        """
+        # lib_root = /root/run_base/lavis/
         lib_root = Path(registry.get_path("library_root"))
+
+        # default output_dir = /root/run_base/lavis/output/{output_dir}/{job_id}
+        # output_dir = lib_root / self.config.run_cfg.output_dir / self.job_id
+        
+        # fixed output_dir = /output/{output_dir}/{job_id}
 
         output_dir = Path(self.config.run_cfg.output_dir) / self.job_id
         result_dir = output_dir / "result"
@@ -357,6 +366,7 @@ class RunnerBase:
             self._load_checkpoint(self.resume_ckpt_path)
 
         if len(self.valid_splits) > 0:
+                    
             for split_name in self.valid_splits:
                 logging.info("INIT Evaluating on {}.".format(split_name))
 
@@ -376,7 +386,9 @@ class RunnerBase:
                             self._save_checkpoint(-1, is_best=True)
 
                         val_log.update({"best_epoch": best_epoch})
-                        self.log_stats(val_log, split_name)        
+                        self.log_stats(val_log, split_name)    
+                                    
+        count_for_early_stopping = 0   
         for cur_epoch in range(self.start_epoch, self.max_epoch):
             # training phase
             if not self.evaluate_only:
@@ -406,10 +418,12 @@ class RunnerBase:
 
                             agg_metrics = val_log["agg_metrics"]
                             if agg_metrics > best_agg_metric and split_name == "val":
+                                count_for_early_stopping = 0 
                                 best_epoch, best_agg_metric = cur_epoch, agg_metrics
 
                                 self._save_checkpoint(cur_epoch, is_best=True)
-
+                            else:
+                                count_for_early_stopping += 1 
                             val_log.update({"best_epoch": best_epoch})
                             self.log_stats(val_log, split_name)
 
@@ -423,7 +437,11 @@ class RunnerBase:
 
             dist.barrier()
 
-        # testing phase
+        
+            if count_for_early_stopping >= 3:
+                logging.info("Early stopped by reaching plaetu.")
+                break
+        # testing phase <- 이걸 위로 올리면 test set metric 확인 가능
         test_epoch = "best" if len(self.valid_splits) > 0 else cur_epoch
         self.evaluate(cur_epoch=test_epoch, skip_reload=self.evaluate_only)
 
@@ -542,7 +560,7 @@ class RunnerBase:
                         sampler = sampler if is_train else None
                 else:
                     sampler = None
-
+                    
                 loader = DataLoader(
                     dataset,
                     batch_size=bsz,
