@@ -47,6 +47,8 @@ class BlipCaptionProcessor(BaseProcessor):
         return cls(prompt=prompt, max_words=max_words)
 
     def pre_caption(self, caption):
+        print("caption")
+        print(caption)
         caption = re.sub(
             r"([.!\"()*#:;~])",
             " ",
@@ -237,3 +239,36 @@ class Blip2ImageTrainProcessor(BlipImageBaseProcessor):
             min_scale=min_scale,
             max_scale=max_scale,
         )
+        
+@registry.register_processor("instruct_blip_question")
+class InstructBlipQuestionProcessor(BaseProcessor):
+    def __init__(self, max_words=1000):
+        self.max_words = max_words
+
+    def __call__(self, question):
+        return self.pre_question(question)
+
+    @classmethod
+    def from_config(cls, cfg=None):
+        if cfg is None:
+            cfg = OmegaConf.create()
+            
+        # (max words of scienceQA is 391, 590 with lecture)
+        max_words = cfg.get("max_words", 1000)
+
+        return cls(max_words=max_words)
+
+    def pre_question(self, question):
+        question = re.sub(
+            r"([!*#;])",
+            "",
+            question
+        )
+        question = question.rstrip(" ")
+
+        # truncate question 
+        question_words = question.split(" ")
+        if len(question_words) > self.max_words:
+            question = " ".join(question_words[: self.max_words])
+
+        return question

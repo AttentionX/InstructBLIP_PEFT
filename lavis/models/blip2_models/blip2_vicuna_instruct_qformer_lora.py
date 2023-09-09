@@ -14,10 +14,16 @@ import transformers
 
 from lavis.common.registry import registry
 from lavis.models.blip2_models.blip2 import Blip2Base, disabled_train
+import lavis.models.blip2_models.Qformer_lora as Qformer_lora 
 from lavis.common.utils import is_url
 from lavis.common.dist_utils import download_cached_file
-
 from lavis.models.blip2_models.Qformer_lora import lora, custom_lora, mark_only_lora_as_trainable
+
+# Add LoRA Q-former here
+QFORMER_LORA = True 
+if QFORMER_LORA:
+    Qformer_lora.lora()
+
 
 @registry.register_model("blip2_vicuna_instruct_qformer_lora")
 class Blip2VicunaInstructQformerLoRA(Blip2Base):

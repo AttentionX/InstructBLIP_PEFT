@@ -24,7 +24,7 @@ class BaseDataset(Dataset):
 
         self.annotation = []
         for ann_path in ann_paths:
-            self.annotation.extend(json.load(open(ann_path, "r")))
+            self.annotation.extend(json.load(open(ann_path, "r"))[:100])
 
         self.vis_processor = vis_processor
         self.text_processor = text_processor
@@ -43,7 +43,7 @@ class BaseDataset(Dataset):
 
     def _add_instance_ids(self, key="instance_id"):
         for idx, ann in enumerate(self.annotation):
-            ann[key] = str(idx)
+            ann[key] = str(idx) 
 
 
 class ConcatDataset(ConcatDataset):

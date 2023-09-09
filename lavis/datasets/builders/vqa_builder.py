@@ -12,8 +12,9 @@ from lavis.datasets.datasets.aok_vqa_datasets import AOKVQADataset, AOKVQAEvalDa
 from lavis.datasets.datasets.coco_vqa_datasets import COCOVQADataset, COCOVQAEvalDataset
 from lavis.datasets.datasets.vg_vqa_datasets import VGVQADataset
 from lavis.datasets.datasets.gqa_datasets import GQADataset, GQAEvalDataset
-from lavis.datasets.datasets.scienceqa_datasets import ScienceQADataset
-
+from lavis.datasets.datasets.scienceqa_datasets import ScienceQADataset, ScienceQAEvalDataset
+from lavis.datasets.datasets.vizwiz_datasets import VizWizDataset, VizWizEvalDataset
+from lavis.datasets.datasets.iconqa_datasets import IconQADataset, IconQAEvalDataset
 
 @registry.register_builder("coco_vqa")
 class COCOVQABuilder(BaseDatasetBuilder):
@@ -61,8 +62,26 @@ class GQABuilder(BaseDatasetBuilder):
 @registry.register_builder("scienceqa")
 class ScienceQABuilder(BaseDatasetBuilder):
     train_dataset_cls = ScienceQADataset
-    eval_dataset_cls = ScienceQADataset
+    eval_dataset_cls = ScienceQAEvalDataset
     
     DATASET_CONFIG_DICT = {
         "default": "configs/datasets/scienceqa/defaults.yaml",
+    }
+
+@registry.register_builder("vizwiz")
+class VizWizBuilder(BaseDatasetBuilder):
+    train_dataset_cls = VizWizDataset
+    eval_dataset_cls = VizWizEvalDataset
+    
+    DATASET_CONFIG_DICT = {
+        "default": "configs/datasets/vizwiz/defaults.yaml",
+    }
+    
+@registry.register_builder("iconqa")
+class VizWizBuilder(BaseDatasetBuilder):
+    train_dataset_cls = IconQADataset
+    eval_dataset_cls = IconQAEvalDataset
+    
+    DATASET_CONFIG_DICT = {
+        "default": "configs/datasets/iconqa/defaults.yaml",
     }

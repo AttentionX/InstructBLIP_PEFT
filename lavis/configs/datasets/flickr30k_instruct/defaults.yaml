@@ -4,7 +4,7 @@
  # For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
 
 datasets:
-  flickr30k:
+  flickr30k_instruct:
     # data_dir: ${env.data_dir}/datasets
     data_type: images
 
