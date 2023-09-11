@@ -609,6 +609,7 @@ def lora(r=lora_r, alpha=lora_alpha, dropout=lora_dropout, enabled: bool = True,
         return
 
     BertSelfAttention.lora_config = LoRAConfig(r=r, alpha=alpha, dropout=dropout)
+    BertSelfAttention.qkv = qkv
     # CausalSelfAttention.lora_config = LoRAConfig(r=r, alpha=alpha, dropout=dropout)
     # when entering context manager replace link to causal self-attention class from original
     # to a variant with LoRA
