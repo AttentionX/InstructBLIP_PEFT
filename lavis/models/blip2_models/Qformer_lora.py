@@ -407,6 +407,7 @@ class LoRAConfig:
 class BertSelfAttention(Qformer.BertSelfAttention):
     lora_config = LoRAConfig(r=lora_r, alpha=lora_alpha, dropout=lora_dropout)
     qkv = [True, True, True]
+    selfattention_lora = True
     
     def __init__(self, config, is_cross_attention):
         super().__init__(config, is_cross_attention)
@@ -424,7 +425,7 @@ class BertSelfAttention(Qformer.BertSelfAttention):
         self.all_head_size = self.num_attention_heads * self.attention_head_size
 
         self.query = nn.Linear(config.hidden_size, self.all_head_size)
-        if self.qkv[0] is True or is_cross_attention is not True:
+        if self.qkv[0] is True or (is_cross_attention is not True and self.selfattention_lora is True):
             self.query = MergedLinear(
                 config.hidden_size,
                 self.all_head_size,
@@ -480,18 +481,19 @@ class BertSelfAttention(Qformer.BertSelfAttention):
             #     bias=True
             # )
             
-            # self.value = nn.Linear(config.hidden_size, self.all_head_size)
-            self.value = MergedLinear(
-                config.hidden_size,
-                self.all_head_size,
-                r=self.lora_config.r,
-                lora_alpha=self.lora_config.alpha,
-                lora_dropout=self.lora_config.dropout,
-                enable_lora=[True],
-                fan_in_fan_out = False,
-                merge_weights=True,
-                bias=True
-            )
+            self.value = nn.Linear(config.hidden_size, self.all_head_size)
+            if self.selfattention_lora is True:
+                self.value = MergedLinear(
+                    config.hidden_size,
+                    self.all_head_size,
+                    r=self.lora_config.r,
+                    lora_alpha=self.lora_config.alpha,
+                    lora_dropout=self.lora_config.dropout,
+                    enable_lora=[True],
+                    fan_in_fan_out = False,
+                    merge_weights=True,
+                    bias=True
+                )
 
         self.dropout = nn.Dropout(config.attention_probs_dropout_prob)
         self.position_embedding_type = getattr(
@@ -604,12 +606,13 @@ def lora(r=lora_r, alpha=lora_alpha, dropout=lora_dropout, enabled: bool = True,
         dropout: dropout that is applied on the input in the LoRA branch (before multiplying by matrix A)
         enabled: enables/disables LoRA
     """
-    if not enabled:
+    if not enabled and True not in qkv:
         yield
         return
 
     BertSelfAttention.lora_config = LoRAConfig(r=r, alpha=alpha, dropout=dropout)
     BertSelfAttention.qkv = qkv
+    BertSelfAttention.selfattention_lora = enabled
     # CausalSelfAttention.lora_config = LoRAConfig(r=r, alpha=alpha, dropout=dropout)
     # when entering context manager replace link to causal self-attention class from original
     # to a variant with LoRA
