@@ -731,7 +731,7 @@ class Blip2VicunaInstructQformerLoRA(Blip2Base):
         QFormerSelfAttention_lora_k = cfg.get("qformer_crossattention_lora_k", False)
         QFormerSelfAttention_lora_v = cfg.get("qformer_crossattention_lora_v", False)
 
-        with lora(r, alpha, dropout, enabled=BertSelfAttention_lora, qkv=[QFormerSelfAttention_lora_q, QFormerSelfAttention_lora_k, QFormerSelfAttention_lora_v]), custom_lora(r, alpha, dropout, enable=BertSelfOutput_lora, type="BertSelfOutput"), custom_lora(r, alpha, dropout, enable=BertOutput_lora, type="BertOutput"):
+        with lora(r, alpha, dropout, enabled=BertSelfAttention_lora, qkv=[QFormerSelfAttention_lora_q, QFormerSelfAttention_lora_k, QFormerSelfAttention_lora_v]), custom_lora(r, alpha, dropout, enabled=BertSelfOutput_lora, type="BertSelfOutput"), custom_lora(r, alpha, dropout, enabled=BertOutput_lora, type="BertOutput"):
             # Qformer = QformerModel.from_pretrained(llm_model)
             model = cls(
                 vit_model=vit_model,
