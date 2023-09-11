@@ -450,20 +450,20 @@ class Blip2VicunaInstructQformerLoRA(Blip2Base):
             for i in range(samples["image"].size(0)):
                 this_sample = {
                     "image": samples["image"][i].unsqueeze(0),
-                    "prompt": samples["prompt"],
+                    # "prompt": samples["prompt"],
                 }
 
                 if "text_input" in samples.keys():
                     this_sample["text_input"] = [samples["text_input"][i]]
 
-                if 'context' in samples.keys():
-                    this_sample['context'] = [samples["context"][i]]
+                # if 'context' in samples.keys():
+                #     this_sample['context'] = [samples["context"][i]]
 
-                if 'history' in samples.keys():
-                    this_sample['history'] = [samples["history"][i]]
+                # if 'history' in samples.keys():
+                #     this_sample['history'] = [samples["history"][i]]
 
-                if 'caption' in samples.keys():
-                    this_sample['caption'] = [samples["caption"][i]]
+                # if 'caption' in samples.keys():
+                #     this_sample['caption'] = [samples["caption"][i]]
 
                 this_result = self._predict_class(this_sample, candidates[i], n_segments)
                 results.append(this_result)
@@ -471,7 +471,8 @@ class Blip2VicunaInstructQformerLoRA(Blip2Base):
             try:
                 results = torch.cat(results, dim=0)
             except:
-                results = [res.tolist()[0] for res in results]
+                # results = [res.tolist()[0] for res in results]
+                results = [res[0] for res in results]
 
             return results
 
