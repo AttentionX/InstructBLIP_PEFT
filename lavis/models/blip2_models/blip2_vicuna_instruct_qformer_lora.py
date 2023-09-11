@@ -659,8 +659,9 @@ class Blip2VicunaInstructQformerLoRA(Blip2Base):
 
             all_losses = torch.cat(all_losses, dim=-1)
             output_class_ranks = torch.argsort(all_losses, dim=-1)
+            top_predicted_classes = [candidates[idx] for idx in output_class_ranks[:, 0].tolist()]
 
-        return output_class_ranks
+        return top_predicted_classes
 
     def _lemmatize(self, answers):
         def apply(answer):
