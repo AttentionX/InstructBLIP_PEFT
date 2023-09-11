@@ -409,7 +409,7 @@ class BertSelfAttention(Qformer.BertSelfAttention):
     qkv = [True, True, True]
     
     def __init__(self, config, is_cross_attention):
-        super().__init__()
+        super().__init__(config, is_cross_attention)
         self.config = config
         if config.hidden_size % config.num_attention_heads != 0 and not hasattr(
             config, "embedding_size"
