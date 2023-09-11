@@ -377,6 +377,7 @@ class ScienceQATask(VQATask):
         return pred_qa_pairs
 
     def after_evaluation(self, val_result, split_name, **kwargs):
+        print(val_result[:5])
         result_file = self.save_result(
             val_result,
             result_dir=registry.get_path("result_dir"),
