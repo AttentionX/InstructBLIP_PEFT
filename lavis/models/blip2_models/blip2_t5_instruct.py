@@ -551,8 +551,6 @@ class Blip2T5Instruct(Blip2Base):
         #     prompt = [f'This image has the caption "{samples["caption"][i]}". {prompt[i]}' for i in range(len(prompt))]
         
         prompt = [samples['text_input'][i] for i in range(len(image))]
-        print(prompt)
-        print(prompt[0])
 
         query_tokens = self.query_tokens.expand(bs, -1, -1)
         if self.qformer_text_input:
