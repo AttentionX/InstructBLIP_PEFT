@@ -553,7 +553,7 @@ class BertSelfAttention(Qformer.BertSelfAttention):
 class BertSelfOutput(Qformer.BertSelfOutput):
     lora_config = LoRAConfig(r=lora_r, alpha=lora_alpha, dropout=lora_dropout)
     def __init__(self, config):
-        super().__init__()
+        super().__init__(config)
         # self.dense = nn.Linear(config.hidden_size, config.hidden_size)
         self.dense = MergedLinear(
             config.hidden_size,
@@ -572,7 +572,7 @@ class BertSelfOutput(Qformer.BertSelfOutput):
 class BertOutput(Qformer.BertOutput):
     lora_config = LoRAConfig(r=lora_r, alpha=lora_alpha, dropout=lora_dropout)
     def __init__(self, config):
-        super().__init__()
+        super().__init__(config)
         # self.dense = nn.Linear(config.intermediate_size, config.hidden_size)
         self.dense = MergedLinear(
             config.intermediate_size,
