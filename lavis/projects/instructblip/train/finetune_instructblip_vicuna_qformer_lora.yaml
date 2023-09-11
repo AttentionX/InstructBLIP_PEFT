@@ -72,7 +72,7 @@ run:
   warmup_steps: 5000
 
   seed: 42
-  output_dir: "output/InstructBLIP/finetune_sceinceqa"
+  output_dir: "output/InstructBLIP/finetune_sceinceqa_qformer_lora"
 
   amp: True
   resume_ckpt_path: null
