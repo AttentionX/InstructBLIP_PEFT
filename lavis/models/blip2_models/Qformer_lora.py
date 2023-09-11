@@ -425,7 +425,7 @@ class BertSelfAttention(Qformer.BertSelfAttention):
         self.all_head_size = self.num_attention_heads * self.attention_head_size
 
         self.query = nn.Linear(config.hidden_size, self.all_head_size)
-        if self.qkv[0] is True or (is_cross_attention is not True and self.selfattention_lora is True):
+        if (is_cross_attention and self.qkv[0] is True) or (is_cross_attention is not True and self.selfattention_lora is True):
             self.query = MergedLinear(
                 config.hidden_size,
                 self.all_head_size,
