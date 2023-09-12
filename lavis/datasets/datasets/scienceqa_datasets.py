@@ -31,14 +31,17 @@ class __DisplMixin:
         )
         
 class ScienceQADataset(BaseDataset):
-    def __init__(self, vis_processor, text_processor, vis_root, ann_paths, train_sample_rate=1):
+    def __init__(self, vis_processor, text_processor, vis_root, ann_paths, train_samples_portion="all"):
         super().__init__(vis_processor, text_processor, vis_root, ann_paths=[])
         self.annotation = []
         for ann in ann_paths:
             # self.annotation.extend(pd.read_parquet(ann))
             self.annotation = pd.read_json(ann)
 
-        self.annotation = self.annotation.sample(frac=train_sample_rate)
+        if not (type(train_samples_portion) == int or train_samples_portion == "all" ):
+            raise ValueError("train_samples_portion must be a positive integer or \"all\"")
+        if train_samples_portion != "all":
+            self.annotation = self.annotation.iloc[:train_samples_portion]
         # answer_list for vocabulary ranking method
         self.answer_list = ["(a)", "(b)", "(c)", "(d)", "(e)"]
         
@@ -56,7 +59,7 @@ class ScienceQADataset(BaseDataset):
         text_input = self.get_text_input(ann)
         text_input = self.text_processor(text_input)
 
-        answer = ann["answer"]
+        answer = ann["answer_train"]
         # print({
         #     "image": image,
         #     "text_input": text_input,
@@ -93,7 +96,7 @@ class ScienceQADataset(BaseDataset):
         # 0 -> a, 1 -> b, 2 -> c, 3 -> d, 4 -> e
         for choice in sample["choices"]:
             label = chr(ord('a') + i)
-            choices += f"({label}). {choice}\n"
+            choices += f"({label}) {choice}\n"
             i += 1
         
         question = f"""
@@ -114,7 +117,7 @@ class ScienceQADataset(BaseDataset):
         # 0 -> a, 1 -> b, 2 -> c, 3 -> d, 4 -> e
         for choice in sample["choices"]:
             label = chr(ord('a') + i)
-            choices += f"({label}). {choice}\n"
+            choices += f"({label}) {choice}\n"
             i += 1
         
         text_input = f"""Context: {{{sample['context']}}} Question: {{{sample['question']}}} Options: {{{choices}}} Answer:"""
@@ -208,7 +211,7 @@ class ScienceQAEvalDataset(VQAEvalDataset, __DisplMixin):
         # 0 -> a, 1 -> b, 2 -> c, 3 -> d, 4 -> e
         for choice in sample["choices"]:
             label = chr(ord('a') + i)
-            choices += f"({label}). {choice}\n"
+            choices += f"({label}) {choice}\n"
             i += 1
         
         question = f"""
@@ -229,7 +232,7 @@ class ScienceQAEvalDataset(VQAEvalDataset, __DisplMixin):
         # 0 -> a, 1 -> b, 2 -> c, 3 -> d, 4 -> e
         for choice in sample["choices"]:
             label = chr(ord('a') + i)
-            choices += f"({label}). {choice}\n"
+            choices += f"({label}) {choice}\n"
             i += 1
         
         text_input = f"""Context: {{{sample['context']}}} Question: {{{sample['question']}}} Options: {{{choices}}} Answer:"""

@@ -36,7 +36,7 @@ class BaseDatasetBuilder:
             self.config = cfg
 
         self.data_type = self.config.data_type
-        self.train_sample_rate = self.config.train_sample_rate
+        self.train_samples_portion = self.config.train_samples_portion
 
         self.vis_processors = {"train": BaseProcessor(), "eval": BaseProcessor()}
         self.text_processors = {"train": BaseProcessor(), "eval": BaseProcessor()}
@@ -245,7 +245,7 @@ class BaseDatasetBuilder:
                     text_processor=text_processor,
                     ann_paths=ann_paths,
                     vis_root=vis_path,
-                    train_sample_rate=self.train_sample_rate 
+                    train_samples_portion=self.train_samples_portion
                 )
             else:
                 datasets[split] = dataset_cls(

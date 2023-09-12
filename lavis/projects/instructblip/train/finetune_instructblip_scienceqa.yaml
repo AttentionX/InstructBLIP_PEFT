@@ -11,7 +11,7 @@ model:
 
 datasets:
   scienceqa:
-    train_sample_rate: 0.5
+    train_samples_portion: all
     vis_processor:
       train:
         name: "blip2_image_train"
