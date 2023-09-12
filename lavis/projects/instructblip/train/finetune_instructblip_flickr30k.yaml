@@ -6,51 +6,28 @@
 model:
   arch: blip2_t5_instruct
   model_type: flant5xl # 
-  load_pretrained: True #pretrain from scratch
+  load_pretrained: True # pretrain from scratch
   freeze_vit: True
 
 
 datasets:
-  # scienceqa:
-  #   vis_processor:
-  #       train:
-  #         name: "blip2_image_train"
-  #         image_size: 224
-  #   text_processor:
-  #       train:
-  #         name: "blip_caption"
-  # coco_caption:
-  #   vis_processor:
-  #       train:
-  #         name: "blip2_image_train"
-  #         image_size: 224
-  #       eval:
-  #         name: "blip2_image_train"
-  #         image_size: 224
-  #   text_processor:
-  #       train:
-  #         name: "blip_caption"
-  #       eval:
-  #         name: "blip_caption"
-
-  vizwiz:
-    train_samples_portion: all 
+  flickr30k_instruct:
+    train_samples_portion: 1
     vis_processor:
-        train:
-          name: "blip2_image_train"
-          image_size: 224
-        eval:
-          name: "blip2_image_train"
-          image_size: 224
+      train:
+        name: "blip2_image_train"
+        image_size: 224
+      eval:
+        name: "blip2_image_train"
+        image_size: 224
     text_processor:
-        train:
-          name: "instruct_blip_question"
-        eval:
-          name: "instruct_blip_question"
+      train:
+        name: "blip_caption"
+      eval:
+        name: "blip_caption"
     #  build_info:
     #     images:
     #       storage: 'lavis/flickr30k'          
-
   # vg_caption: # name of the dataset builder
   #   vis_processor:
   #       train:
@@ -64,14 +41,17 @@ datasets:
 #             storage: '//export/share/datasets/vision/visual-genome/image/'
 
 run:
-  task: vizwiz
+  task: flickr30k_instruct
   # optimizer
   lr_sched: "linear_warmup_cosine_lr"
   init_lr: 1e-4
   min_lr: 1e-5
   warmup_lr: 1e-6
 
-
+  # for cococapeval
+  num_beams: 1
+  max_len: 256
+  min_len: 1
   log_freq: 250
 
   weight_decay: 0.05
@@ -82,12 +62,13 @@ run:
   warmup_steps: 5000
 
   seed: 42
-  output_dir: "output/InstructBLIP/finetune"
+  output_dir: "/output/InstructBLIP/finetune_flickr"
 
   amp: True
   resume_ckpt_path: null
 
-  evaluate: False 
+  # evaluate: True
+  evaluate: False
   train_splits: ["train"]
   valid_splits: ["val"]
   test_splits: ["test"]

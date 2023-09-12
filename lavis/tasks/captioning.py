@@ -216,13 +216,10 @@ def flickr30k_caption_eval(results_file, split):
         flickr_result.getImgIds()
     )  # please remove this line when evaluating the full validation set
 
-    # Following InstructBlip paper, evaluate only on CIDEr
-    flickr_eval.params["metric"] = ["CIDEr"]
     # evaluate results
     flickr_eval.evaluate()
 
-    # print output evaluation scores
-    for metric, score in flickr_eval.eval.items():
-        print(f"{metric}: {score:.3f}")
+    # print CIDEr output evaluation scores
+    print(f"CIDEr: {flickr_eval.eval['CIDEr']:.3f}")
 
     return flickr_eval
