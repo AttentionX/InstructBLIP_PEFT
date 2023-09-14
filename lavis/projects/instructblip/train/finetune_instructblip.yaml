@@ -36,7 +36,7 @@ datasets:
   #         name: "blip_caption"
 
   vizwiz:
-    train_sample_rate: 0.05
+    train_samples_portion: all 
     vis_processor:
         train:
           name: "blip2_image_train"
@@ -46,9 +46,9 @@ datasets:
           image_size: 224
     text_processor:
         train:
-          name: "blip_caption"
+          name: "instruct_blip_question"
         eval:
-          name: "blip_caption"
+          name: "instruct_blip_question"
     #  build_info:
     #     images:
     #       storage: 'lavis/flickr30k'          
@@ -73,10 +73,7 @@ run:
   min_lr: 1e-5
   warmup_lr: 1e-6
 
-  # for cococapeval
-  num_beams: 5
-  max_len: 10
-  min_len: 1
+
   log_freq: 250
 
   weight_decay: 0.05

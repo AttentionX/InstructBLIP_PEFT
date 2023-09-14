@@ -38,10 +38,10 @@ class ScienceQADataset(BaseDataset):
             # self.annotation.extend(pd.read_parquet(ann))
             self.annotation = pd.read_json(ann)
 
-        if not (type(train_samples_portion) == int or train_samples_portion == "all" ):
+        if not ((type(train_samples_portion) == int and train_samples_portion > 0) or train_samples_portion == "all" ):
             raise ValueError("train_samples_portion must be a positive integer or \"all\"")
         if train_samples_portion != "all":
-            self.annotation = self.annotation.iloc[:train_samples_portion]
+            self.annotation = self.annotation.sample(n=train_samples_portion)
         # answer_list for vocabulary ranking method
         self.answer_list = ["(a)", "(b)", "(c)", "(d)", "(e)"]
         

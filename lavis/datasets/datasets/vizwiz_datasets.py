@@ -25,14 +25,16 @@ class __DisplMixin:
 
     
 class VizWizDataset(BaseDataset):
-    def __init__(self, vis_processor, text_processor, vis_root, ann_paths, train_sample_rate=1):
+    def __init__(self, vis_processor, text_processor, vis_root, ann_paths, train_samples_portion="all"):
         super().__init__(vis_processor, text_processor, vis_root, ann_paths=[])
         self.annotation = []
         for ann in ann_paths:
-            # self.annotation.extend(pd.read_parquet(ann))
-            # self.annotation = pd.read_parquet(ann)
             self.annotation = pd.read_json(ann)
-        self.annotation = self.annotation.sample(frac=train_sample_rate)
+                       
+        if not (type(train_samples_portion) == int or train_samples_portion == "all" ):
+            raise ValueError("train_samples_portion must be a positive integer or \"all\"")
+        if train_samples_portion != "all":
+            self.annotation = self.annotation.sample(n=train_samples_portion)
 
     
     def __getitem__(self, index):
@@ -43,7 +45,6 @@ class VizWizDataset(BaseDataset):
         image = self.vis_processor(image)
 
         instruction = f'<Image> Question: {ann["question"]} Short answer:'
-        
         instruction = self.text_processor(instruction)
         answer = []
         for i in range(10):

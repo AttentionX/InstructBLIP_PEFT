@@ -498,10 +498,10 @@ class VizWizTask(VQATask):
     @dist_utils.main_process
     def _report_metrics(self, result_file, split):
         """
-        Use official VQA evaluation script to report metrics.
+        Use official Vizwiz evaluation script to report metrics.
         """
         metrics = {}
-
+        print(result_file)
          
         annFile = "lavis/vizwiz/annotations/" + split + ".json"
         vqa = VQA_Vizwiz(annFile)

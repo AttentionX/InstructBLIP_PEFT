@@ -23,8 +23,6 @@ class BaseDataset(Dataset):
         self.vis_root = vis_root
 
         self.annotation = []
-        for ann_path in ann_paths:
-            self.annotation.extend(json.load(open(ann_path, "r"))[:100])
 
         self.vis_processor = vis_processor
         self.text_processor = text_processor
