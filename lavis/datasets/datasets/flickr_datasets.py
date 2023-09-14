@@ -12,7 +12,7 @@ img_id_pattern = r"\/([^\/.]*)\."
 
 class FlickrDataset(CaptionDataset):
     """Flickr30k caption dataset in instruction format"""
-    def __init__(self, vis_processor, text_processor, vis_root, ann_paths, train_samples_portion=100):
+    def __init__(self, vis_processor, text_processor, vis_root, ann_paths, train_samples_portion):
         """
         vis_root (string): Root directory of images (e.g. coco/images/)
         ann_root (string): directory to store the annotation file
@@ -23,7 +23,7 @@ class FlickrDataset(CaptionDataset):
         for ann in ann_paths:
             with open(ann, 'r') as f:
                 self.annotation += json.load(f)
-        self.annotation = sample(self.annotation, int(len(self.annotation)*train_sample_rate))
+        self.annotation = sample(self.annotation, train_samples_portion if train_samples_portion != "all" else len(self.annotation))
 
     def __getitem__(self, index):
         ann = self.annotation[index]
