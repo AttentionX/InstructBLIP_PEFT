@@ -299,13 +299,6 @@ class BertSelfOutput(nn.Module):
 class BertAttention(nn.Module):
     def __init__(self, config, is_cross_attention=False):
         super().__init__()
-        
-        # Need to place this code when the entire model is initialized. Currently only the self module is freezed (except for the lora layers in Q, K, V)
-        # if USE_LORA:
-        #     with lora(r=lora_r, alpha=lora_alpha, dropout=lora_dropout, enabled=True):
-        #         self.self = BertSelfAttention(config, is_cross_attention)
-        #         Qformer_lora.mark_only_lora_as_trainable(self.self)    
-        # else:
         self.self = BertSelfAttention(config, is_cross_attention)
         
         self.output = BertSelfOutput(config, is_cross_attention)
