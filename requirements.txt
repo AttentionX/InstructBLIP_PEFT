@@ -28,3 +28,4 @@ transformers>=4.28.0
 webdataset
 wheel
 peft
+scikit-learn
