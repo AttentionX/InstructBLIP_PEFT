@@ -21,4 +21,10 @@ datasets:
           storage: /input/flickr30k/annotations/test.json
       images:
           storage: /input/flickr30k/images
+          train:
+            storage: /input/flickr30k/images
+          val:
+            storage: /input/flickr30k/images
+          test:
+            storage: /input/flickr30k/images
           # storage: /export/share/datasets/vision/flickr30k

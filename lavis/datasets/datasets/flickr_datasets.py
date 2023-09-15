@@ -1,5 +1,6 @@
 import os
-import pandas as pd
+import json
+from random import sample
 from PIL import Image
 import re
 
@@ -11,9 +12,20 @@ img_id_pattern = r"\/([^\/.]*)\."
 
 class FlickrDataset(CaptionDataset):
     """Flickr30k caption dataset in instruction format"""
+    def __init__(self, vis_processor, text_processor, vis_root, ann_paths, train_samples_portion):
+        """
+        vis_root (string): Root directory of images (e.g. coco/images/)
+        ann_root (string): directory to store the annotation file
+        split (string): train or val
+        """
+        super().__init__(vis_processor, text_processor, vis_root, ann_paths)
+        self.annotation = []
+        for ann in ann_paths:
+            with open(ann, 'r') as f:
+                self.annotation += json.load(f)
+        self.annotation = sample(self.annotation, train_samples_portion if train_samples_portion != "all" else len(self.annotation))
 
     def __getitem__(self, index):
-        print("Flickr item!")
         ann = self.annotation[index]
 
         image_path = os.path.join(
@@ -67,10 +79,8 @@ class FlickrEvalDataset(CaptionEvalDataset):
 
         img_id = re.search(img_id_pattern, ann["image"]).group(1)
 
-        print("eval data")
         print(
             {
-                # "image_name": ann["image"],
                 "image_id": img_id,
                 "text_input": instruction,
                 "text_output": caption,
@@ -78,7 +88,6 @@ class FlickrEvalDataset(CaptionEvalDataset):
         )
         return {
             "image": image,
-            # "image_name": ann["image"],
             "image_id": img_id,
             "text_input": instruction,
             "text_output": caption,
