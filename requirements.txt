@@ -17,6 +17,7 @@ pycocoevalcap
 pycocotools
 python-magic
 scikit-image
+scikit-learn
 sentencepiece
 spacy
 streamlit
