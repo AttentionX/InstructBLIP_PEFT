@@ -4,15 +4,24 @@
  # For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
 
 model:
-  arch: blip2_t5_instruct
-  model_type: flant5xl # 
-  load_pretrained: True # pretrain from scratch
+  arch: blip2_vicuna_instruct_qformer_lora # blip2_vicuna_instruct #
+  model_type: vicuna7b # vicuna7b #
+  load_pretrained: True #pretrain from scratch
   freeze_vit: True
+  lora_r: 8
+  lora_alpha: 16
+  lora_dropout: 0.05
+  selfattention_lora: False
+  selfoutput_lora: False
+  bertoutput_lora: False
+  qformer_crossattention_lora_q: True
+  qformer_crossattention_lora_k: False
+  qformer_crossattention_lora_v: False
 
 
 datasets:
   flickr30k_instruct:
-    train_samples_portion: 100
+    train_samples_portion: all
     vis_processor:
       train:
         name: "blip2_image_train"
@@ -62,7 +71,7 @@ run:
   warmup_steps: 5000
 
   seed: 42
-  output_dir: "/output/InstructBLIP/flickr/flickr_1"
+  output_dir: "/output/results/flickr/flickr_1"
 
   amp: True
   resume_ckpt_path: null
