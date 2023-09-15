@@ -725,15 +725,15 @@ class Blip2VicunaInstructQformerLoRA(Blip2Base):
         alpha = cfg.get("lora_alpha", 16)
         dropout = cfg.get("lora_dropout", 0.05)
         
-        BertSelfAttention_lora = cfg.get("selfattention_lora", False)
-        BertSelfOutput_lora = cfg.get("selfoutput_lora", False)
-        BertOutput_lora = cfg.get("bertoutput_lora", False)
+        self_attention_qv_lora = cfg.get("self_attention_qv_lora", False)
+        self_attention_output_lora = cfg.get("self_attention_output_lora", False)
+        ffn_lora = cfg.get("ffn_lora", False)
         
-        QFormerCrossAttention_lora_q = cfg.get("qformer_crossattention_lora_q", False)
-        QFormerCrossAttention_lora_k = cfg.get("qformer_crossattention_lora_k", False)
-        QFormerCrossAttention_lora_v = cfg.get("qformer_crossattention_lora_v", False)
+        qformer_crossattention_lora_q = cfg.get("qformer_crossattention_lora_q", False)
+        qformer_crossattention_lora_k = cfg.get("qformer_crossattention_lora_k", False)
+        qformer_crossattention_lora_v = cfg.get("qformer_crossattention_lora_v", False)
 
-        with lora(r, alpha, dropout, enabled=BertSelfAttention_lora, qkv=[QFormerCrossAttention_lora_q, QFormerCrossAttention_lora_k, QFormerCrossAttention_lora_v]), custom_lora(r, alpha, dropout, enabled=BertSelfOutput_lora, type="BertSelfOutput"), custom_lora(r, alpha, dropout, enabled=BertOutput_lora, type="BertOutput"):
+        with lora(r, alpha, dropout, enabled=self_attention_qv_lora, qkv=[qformer_crossattention_lora_q, qformer_crossattention_lora_k, qformer_crossattention_lora_v]), custom_lora(r, alpha, dropout, enabled=self_attention_output_lora, type="BertSelfOutput"), custom_lora(r, alpha, dropout, enabled=ffn_lora, type="BertOutput"):
             # Qformer = QformerModel.from_pretrained(llm_model)
             model = cls(
                 vit_model=vit_model,

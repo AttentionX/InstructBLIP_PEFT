@@ -24,6 +24,8 @@ from transformers.modeling_outputs import BaseModelOutput
 import lavis.models.blip2_models.Qformer_lora as Qformer_lora 
 from lavis.common.utils import is_url
 from lavis.common.dist_utils import download_cached_file
+from lavis.models.blip2_models.Qformer_lora import lora, custom_lora, mark_only_lora_as_trainable
+
 
 # Add LoRA Q-former here
 QFORMER_LORA = True  
@@ -769,24 +771,36 @@ class Blip2T5InstructQformerLoRA(Blip2Base):
         qformer_text_input = cfg.get("qformer_text_input", True)
         
         # TODO: if you want to control PEFT by config, you should add some varaibles here
+        r = cfg.get("lora_r", 8)
+        alpha = cfg.get("lora_alpha", 16)
+        dropout = cfg.get("lora_dropout", 0.05)
+        
+        self_attention_qv_lora = cfg.get("self_attention_qv_lora", False)
+        self_attention_output_lora = cfg.get("self_attention_output_lora", False)
+        ffn_lora = cfg.get("ffn_lora", False)
+        
+        qformer_crossattention_lora_q = cfg.get("qformer_crossattention_lora_q", False)
+        qformer_crossattention_lora_k = cfg.get("qformer_crossattention_lora_k", False)
+        qformer_crossattention_lora_v = cfg.get("qformer_crossattention_lora_v", False)
 
-        model = cls(
-            vit_model=vit_model,
-            img_size=img_size,
-            drop_path_rate=drop_path_rate,
-            use_grad_checkpoint=use_grad_checkpoint,
-            vit_precision=vit_precision,
-            freeze_vit=freeze_vit,
-            num_query_token=num_query_token,
-            t5_model=t5_model,
-            prompt=prompt,
-            max_txt_len=max_txt_len,
-            max_output_txt_len=max_output_txt_len,
-            apply_lemmatizer=apply_lemmatizer,
-            num_few_shot_examples=num_few_shot_examples,
-            few_shot_prob=few_shot_prob,
-            qformer_text_input=qformer_text_input,
-        )
+        with lora(r, alpha, dropout, enabled=self_attention_qv_lora, qkv=[qformer_crossattention_lora_q, qformer_crossattention_lora_k, qformer_crossattention_lora_v]), custom_lora(r, alpha, dropout, enabled=self_attention_output_lora, type="BertSelfOutput"), custom_lora(r, alpha, dropout, enabled=ffn_lora, type="BertOutput"):
+            model = cls(
+                vit_model=vit_model,
+                img_size=img_size,
+                drop_path_rate=drop_path_rate,
+                use_grad_checkpoint=use_grad_checkpoint,
+                vit_precision=vit_precision,
+                freeze_vit=freeze_vit,
+                num_query_token=num_query_token,
+                t5_model=t5_model,
+                prompt=prompt,
+                max_txt_len=max_txt_len,
+                max_output_txt_len=max_output_txt_len,
+                apply_lemmatizer=apply_lemmatizer,
+                num_few_shot_examples=num_few_shot_examples,
+                few_shot_prob=few_shot_prob,
+                qformer_text_input=qformer_text_input,
+            )
 
         # if qformer_text_input:
         #     # Hard-coded to load from BLIP-2 stage-1 pre-trained model (not ideal)
