@@ -283,7 +283,7 @@ class BertSelfAttention(nn.Module):
 
 
 class BertSelfOutput(nn.Module):
-    def __init__(self, config):
+    def __init__(self, config, is_cross_attention=False):
         super().__init__()
         self.dense = nn.Linear(config.hidden_size, config.hidden_size)
         self.LayerNorm = nn.LayerNorm(config.hidden_size, eps=config.layer_norm_eps)
@@ -308,7 +308,7 @@ class BertAttention(nn.Module):
         # else:
         self.self = BertSelfAttention(config, is_cross_attention)
         
-        self.output = BertSelfOutput(config)
+        self.output = BertSelfOutput(config, is_cross_attention)
         self.pruned_heads = set()
 
     def prune_heads(self, heads):

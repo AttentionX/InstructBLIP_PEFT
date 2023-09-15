@@ -554,20 +554,23 @@ class BertSelfAttention(Qformer.BertSelfAttention):
 
 class BertSelfOutput(Qformer.BertSelfOutput):
     lora_config = LoRAConfig(r=lora_r, alpha=lora_alpha, dropout=lora_dropout)
-    def __init__(self, config):
+    self_attention, cross_attention = False, False
+    def __init__(self, config, is_cross_attention=False):
         super().__init__(config)
-        # self.dense = nn.Linear(config.hidden_size, config.hidden_size)
-        self.dense = MergedLinear(
-            config.hidden_size,
-            config.hidden_size,
-            r=lora_r,
-            lora_alpha=lora_alpha,
-            lora_dropout=lora_dropout,
-            enable_lora=[True],
-            fan_in_fan_out = False,
-            merge_weights=True,
-            bias=True
-        )
+        self.dense = nn.Linear(config.hidden_size, config.hidden_size)
+        
+        if (is_cross_attention is False and self.self_attention is True) or (is_cross_attention is True and self.cross_attention is True):
+            self.dense = MergedLinear(
+                config.hidden_size,
+                config.hidden_size,
+                r=lora_r,
+                lora_alpha=lora_alpha,
+                lora_dropout=lora_dropout,
+                enable_lora=[True],
+                fan_in_fan_out = False,
+                merge_weights=True,
+                bias=True
+            )
         self.LayerNorm = nn.LayerNorm(config.hidden_size, eps=config.layer_norm_eps)
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
         
@@ -630,7 +633,7 @@ def lora(r=lora_r, alpha=lora_alpha, dropout=lora_dropout, enabled: bool = True,
     # CausalSelfAttention.lora_config = None
     
 @contextmanager
-def custom_lora(r=lora_r, alpha=lora_alpha, dropout=lora_dropout, enabled: bool = True, type: str ="BertSelfOutput"):
+def custom_lora(r=lora_r, alpha=lora_alpha, dropout=lora_dropout, enabled: bool = True, type: str ="BertSelfOutput", sc:list = [False, False]):
     """Apply context manager under which you can instantiate the model with LoRA.
 
     In a nutshell the code inside this function forces to use LoRA variant of causal self-attention
@@ -651,6 +654,8 @@ def custom_lora(r=lora_r, alpha=lora_alpha, dropout=lora_dropout, enabled: bool 
     
     if type == "BertSelfOutput":
         BertSelfOutput.lora_config = LoRAConfig(r=r, alpha=alpha, dropout=dropout)
+        BertSelfOutput.self_attention = sc[0]
+        BertSelfOutput.cross_attention = sc[1]
         bert_self_output = Qformer.BertSelfOutput
         Qformer.BertSelfOutput = BertSelfOutput
         yield

@@ -17,6 +17,7 @@ model:
   qformer_crossattention_lora_q: True
   qformer_crossattention_lora_k: True
   qformer_crossattention_lora_v: True
+  qformer_crossattention_lora_o: True
 
 datasets:
   scienceqa:
