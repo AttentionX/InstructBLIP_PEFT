@@ -56,11 +56,11 @@ run:
   # min_lr: 1e-5
   # warmup_lr: 1e-6
 
-  # weight_decay: 0.05
-  # max_epoch: 10
-  # batch_size_train: 2
-  # batch_size_eval: 1
-  # num_workers: 4
+  weight_decay: 0.05
+  max_epoch: 10
+  batch_size_train: 2
+  batch_size_eval: 1
+  num_workers: 4
   # warmup_steps: 5000
 
   # inference-specific
