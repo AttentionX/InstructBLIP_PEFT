@@ -59,7 +59,8 @@ class ScienceQADataset(BaseDataset):
         text_input = self.get_text_input(ann)
         text_input = self.text_processor(text_input)
 
-        answer = ann["answer_train"]
+        # answer = ann["answer_train"]
+        answer = ann["answer"]
         # print({
         #     "image": image,
         #     "text_input": text_input,
