@@ -11,9 +11,9 @@ model:
   lora_r: 8
   lora_alpha: 16
   lora_dropout: 0.05
-  selfattention_lora: True
+  selfattention_lora: False
   selfoutput_lora: False
-  bertoutput_lora: False
+  bertoutput_lora: True
   qformer_crossattention_lora_q: False
   qformer_crossattention_lora_k: False
   qformer_crossattention_lora_v: False
@@ -51,7 +51,7 @@ datasets:
 run:
   task: scienceqa
   # optimizer
-  lr_sched: "linear_warmup_cosine_lr"
+  # lr_sched: "linear_warmup_cosine_lr"
   init_lr: 1e-5
   # min_lr: 1e-5
   # warmup_lr: 1e-6
