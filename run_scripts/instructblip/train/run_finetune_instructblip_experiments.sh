@@ -32,4 +32,5 @@ mkdir -p $dest
 touch $dir/${benchmark}_${experiment}.log
 nohup python3 -m torch.distributed.run --nproc_per_node=1 train.py --cfg-path lavis/projects/instructblip/train/${benchmark}/finetune_instructblip_${benchmark}_${experiment}.yaml 2>&1 | tee $dir/${benchmark}_$experiment.log
 
+
 rsync -av --no-o --no-g --chmod=777 --exclude='*.pth' $dir/ $dest/

@@ -70,12 +70,12 @@ class VizWizEvalDataset(VQAEvalDataset, __DisplMixin):
 
         self.annotation = [] 
         for ann in ann_paths:
-            self.annotation.extend(json.load(open(ann)))
+            self.annotation.extend(json.load(open(ann, encoding='UTF-8')))
 
         ## TODO: support inference method == 'ranking'
         answer_list_path = ann_paths[0] if len(ann_paths) > 0 else ''
         if os.path.exists(answer_list_path):
-            self.answer_list = json.load(open(answer_list_path))
+            self.answer_list = json.load(open(answer_list_path, encoding='UTF-8'))
         else:
             print("None!!")
             self.answer_list = None
