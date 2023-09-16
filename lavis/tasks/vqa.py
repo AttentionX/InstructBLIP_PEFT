@@ -503,7 +503,7 @@ class VizWizTask(VQATask):
         metrics = {}
         print(result_file)
          
-        annFile = "lavis/vizwiz/annotations/" + split + ".json"
+        annFile = "../../../input/disk-50gb/vizwiz/annotations/" + split + ".json"
         vqa = VQA_Vizwiz(annFile)
         vqa_result = VQA_Vizwiz(result_file)
 

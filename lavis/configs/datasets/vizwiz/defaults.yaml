@@ -41,16 +41,16 @@ datasets:
       # Be careful not to append minus sign (-) before split to avoid itemizing
       annotations:
         train:
-          storage: vizwiz/annotations/train.json
+          storage: ../../../input/disk-50gb/vizwiz/annotations/train.json
         val:
-          storage: vizwiz/annotations/val.json
+          storage: ../../../input/disk-50gb/vizwiz/annotations/val.json
         test:
-          storage: vizwiz/annotations/test.json
+          storage: ../../../input/disk-50gb/vizwiz/annotations/test.json
       images:
-        storage: vizwiz/images/
+        storage: ../../../input/disk-50gb/vizwiz/images/
         train:
-          storage: vizwiz/images/train
+          storage: ../../../input/disk-50gb/vizwiz/images/train
         val:
-          storage: vizwiz/images/val
+          storage: ../../../input/disk-50gb/vizwiz/images/val
         test:
-          storage: vizwiz/images/test
+          storage: ../../../input/disk-50gb/vizwiz/images/test
