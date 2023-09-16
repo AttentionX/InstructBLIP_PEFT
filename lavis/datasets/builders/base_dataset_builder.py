@@ -249,6 +249,8 @@ class BaseDatasetBuilder:
                     train_samples_portion=self.train_samples_portion
                 )
             else:
+                print(f"split: {split}")
+                print(f"ann paths: {ann_paths}")
                 datasets[split] = dataset_cls(
                     vis_processor=vis_processor,
                     text_processor=text_processor,
