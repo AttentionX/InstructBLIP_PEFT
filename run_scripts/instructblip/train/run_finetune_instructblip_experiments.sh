@@ -9,6 +9,16 @@ fi
 benchmark=$1
 experiment=$2
 
+# Setup
+cd /root/InstructBLIP_PEFT
+# Install dependencies
+apt update
+apt install default-jdk -y
+apt install python3.8-venv -y
+python -m venv venv # Create virtual environment
+source venv/bin/activate
+pip install -r requirements.txt
+
 export TORCH_HOME=/output/torch
 export HUGGINGFACE_HUB_CACHE=/output/huggingface
 
@@ -22,12 +32,5 @@ mkdir -p $dest
 touch $dir/${benchmark}_${experiment}.log
 nohup python3 -m torch.distributed.run --nproc_per_node=1 train.py --cfg-path lavis/projects/instructblip/train/${benchmark}/finetune_instructblip_${benchmark}_${experiment}.yaml 2>&1 | tee $dir/${benchmark}_$experiment.log
 
-rsync -av --no-o --no-g --chmod=777 $dir/${benchmark}_${experiment}.log $dest/${benchmark}_${experiment}.log
 
-
-
-# Iterate over all subdirectories
-for subdir in "$dir"/*; do
-    rsync -av --no-o --no-g --chmod=777 "$subdir"/log.txt "$dest"/log.txt
-    rsync -av --no-o --no-g --chmod=777 "$subdir"/result "$dest"/result
-done
+rsync -av --no-o --no-g --chmod=777 --exclude='*.pth' $dir/ $dest/
