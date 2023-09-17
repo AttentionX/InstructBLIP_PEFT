@@ -557,6 +557,41 @@ class IconQATask(VQATask):
 
         return datasets
 
+    # def train_step(self, model, samples):
+    #     txtout = []
+    #     for i in range(len(samples["text_output"])):
+    #         txtout.extend(samples["text_output"][i])
+    #     sample_final = {"image" : torch.cat([samples["image"]] *10 ), "text_input": samples["text_input"]*10, "text_output": txtout}
+    
+    #     output = model(sample_final)
+    #     loss_dict = {}
+    #     for k,v in output.items():
+    #         if "loss" in k:
+    #             loss_dict[k] = v
+
+    #     return output["loss"], loss_dict
+    
+        # answers = model.predict_answers(
+        #     samples=samples,
+        #     answer_list=self.answer_list,
+        #     inference_method=self.inference_method,
+        #     num_beams=self.num_beams,
+        #     max_len=self.max_len,
+        #     min_len=self.min_len,
+        #     num_ans_candidates=self.num_ans_candidates,
+        #     prompt=self.prompt,
+        # )
+        # pred_qa_pairs = []
+
+        # question_id = samples["question_id"]
+        # img_names = samples["image_name"]
+        # for answer, img_name in zip(answers, img_names):
+        #     # ques_id = int(ques_id)
+        #     pred_qa_pairs.append({"image": img_name, "answer": answer})
+
+        # return pred_qa_pairs
+    
+
     def valid_step(self, model, samples):
         # make predicted answers
         # answers = model.predict_answers(

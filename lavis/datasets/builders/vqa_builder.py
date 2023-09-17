@@ -78,7 +78,7 @@ class VizWizBuilder(BaseDatasetBuilder):
     }
     
 @registry.register_builder("iconqa")
-class VizWizBuilder(BaseDatasetBuilder):
+class IconQABuilder(BaseDatasetBuilder):
     train_dataset_cls = IconQADataset
     eval_dataset_cls = IconQAEvalDataset
     
