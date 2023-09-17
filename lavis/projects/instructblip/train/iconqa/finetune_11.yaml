@@ -60,6 +60,7 @@ run:
   max_epoch: 10
   batch_size_train: 2
   batch_size_eval: 1
+  accum_grad_iters: 8
   num_workers: 4
   warmup_steps: 5000
 
