@@ -468,7 +468,48 @@ class Blip2VicunaInstructLoRA(Blip2Base):
             output_text = self._lemmatize(output_text)
 
         return output_text
+    def predict_class(
+        self,
+        samples,
+        candidates,
+        n_segments=1,
+    ):
+        self.llm_tokenizer.padding_side = "left"
 
+        # If candidates is a list of lists, each sample has its candidates, then we need to iterate one by one
+        if type(candidates[0]) == list:
+            results = []
+
+            for i in range(samples["image"].size(0)):
+                this_sample = {
+                    "image": samples["image"][i].unsqueeze(0),
+                    # "prompt": samples["prompt"],
+                }
+
+                if "text_input" in samples.keys():
+                    this_sample["text_input"] = [samples["text_input"][i]]
+
+                # if 'context' in samples.keys():
+                #     this_sample['context'] = [samples["context"][i]]
+
+                # if 'history' in samples.keys():
+                #     this_sample['history'] = [samples["history"][i]]
+
+                # if 'caption' in samples.keys():
+                #     this_sample['caption'] = [samples["caption"][i]]
+
+                this_result = self._predict_class(this_sample, candidates[i], n_segments)
+                results.append(this_result)
+
+            try:
+                results = torch.cat(results, dim=0)
+            except:
+                results = [res[0] for res in results]
+
+            return results
+
+        return self._predict_class(samples, candidates, n_segments)
+    
     def _predict_class(
         self,
         samples,
