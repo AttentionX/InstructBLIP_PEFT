@@ -45,7 +45,7 @@ run:
   task: scienceqa
   # optimizer
   lr_sched: "linear_decay_lr"
-  init_lr: 5e-4
+  init_lr: 2e-5
   min_lr: 0
 
   weight_decay: 0.05

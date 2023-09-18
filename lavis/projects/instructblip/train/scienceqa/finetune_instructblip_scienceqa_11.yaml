@@ -9,8 +9,8 @@ model:
   load_pretrained: True #pretrain from scratch
   freeze_vit: True
   lora_r: 8
-  lora_alpha: 16
-  lora_dropout: 0.05
+  lora_alpha: 8
+  lora_dropout: 0.00
   selfattention_lora: False
   selfoutput_lora: False
   bertoutput_lora: True
