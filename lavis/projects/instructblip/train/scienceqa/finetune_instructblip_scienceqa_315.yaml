@@ -58,8 +58,8 @@ run:
 
   weight_decay: 0.05
   max_epoch: 15
-  batch_size_train: 4
-  accum_grad_iters: 1
+  batch_size_train: 8
+  accum_grad_iters: 2
   batch_size_eval: 1
   num_workers: 4
 
