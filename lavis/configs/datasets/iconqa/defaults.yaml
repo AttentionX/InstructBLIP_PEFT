@@ -7,15 +7,16 @@ datasets:
       # Be careful not to append minus sign (-) before split to avoid itemizing
       annotations:
         train:
-          storage: iconqa/annotations/train.json
+          storage: /input/iconqa/annotations/train.json
         val:
-          storage: iconqa/annotations/val.json
+          storage: /input/iconqa/annotations/val.json
         test:
-          storage: iconqa/annotations/test.json
+          storage: /input/iconqa/annotations/test.json
       images:
+        storage: /input/iconqa  
         train:
-          storage: iconqa/iconqa/train/choose_txt
+          storage: /input/iconqa/train/choose_txt
         val:
-          storage: iconqa/iconqa/val/choose_txt
+          storage: /input/iconqa/val/choose_txt
         test:
-          storage: iconqa/iconqa/test/choose_txt
+          storage: /input/iconqa/test/choose_txt

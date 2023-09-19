@@ -538,6 +538,7 @@ class VizWizTask(VQATask):
     
 @registry.register_task("iconqa")
 class IconQATask(VQATask):
+
     def build_datasets(self, cfg):
         datasets = super().build_datasets(cfg)
 
@@ -569,9 +570,20 @@ class IconQATask(VQATask):
         #     num_ans_candidates=self.num_ans_candidates,
         #     prompt=self.prompt,
         # )
+        candidates = []
+        if not isinstance(samples, list):
+            i = 0
+            for choice in samples["choices"][0]:
+                label = chr(ord('a') + i)
+                candidates.append(f"({label}) {choice}")
+                i += 1
+        else:
+            candidates = samples['choices']
+        
         answers = model.predict_class(
             samples=samples,
-            candidates=self.answer_list,
+            candidates=candidates,
+            n_segments=1,
         )
         pred_qa_pairs = []
 
@@ -586,6 +598,7 @@ class IconQATask(VQATask):
         return pred_qa_pairs
 
     def after_evaluation(self, val_result, split_name, **kwargs):
+        # print(val_result[:5])
         result_file = self.save_result(
             val_result,
             result_dir=registry.get_path("result_dir"),
@@ -600,6 +613,8 @@ class IconQATask(VQATask):
 
     @dist_utils.main_process
     def _report_metrics(self, result_file, split):
+        # IconeQA metric is easy
+        # just check if the predicted answer is the ground truth answer
 
         results = json.load(open(result_file, "r"))
         acc = []
@@ -611,7 +626,7 @@ class IconQATask(VQATask):
             #     return
 
             pred = res["pred_ans"]
-            gt_ans = res["gt_ans"]
+            gt_ans = [res["gt_ans"]]
 
             num_match = sum([pred == gt for gt in gt_ans])
             vqa_acc = min(1.0, num_match / len(gt_ans))

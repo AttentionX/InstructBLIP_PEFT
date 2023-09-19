@@ -24,18 +24,16 @@ class __DisplMixin:
         )
     
 class IconQADataset(BaseDataset):
-    def __init__(self, vis_processor, text_processor, vis_root, ann_paths):
-        """
-        vis_root (string): Root directory of images 
-        ann_root (string): directory to store the annotation file
-        """
+    def __init__(self, vis_processor, text_processor, vis_root, ann_paths, train_samples_portion="all"):
         super().__init__(vis_processor, text_processor, vis_root, ann_paths=[])
-
         self.annotation = []
-
         for ann in ann_paths:
-            print(f"ann path is :", ann)
             self.annotation = pd.read_json(ann)
+
+        if not ((type(train_samples_portion) == int and train_samples_portion > 0) or train_samples_portion == "all" ):
+            raise ValueError("train_samples_portion must be a positive integer or \"all\"")
+        if train_samples_portion != "all":
+            self.annotation = self.annotation.sample(n=train_samples_portion)
 
     def __getitem__(self, index):
         ann = self.annotation.iloc[index]
@@ -54,7 +52,7 @@ class IconQADataset(BaseDataset):
         
         instruction = self.text_processor(instruction)
 
-        answer = ann["answers"]
+        answer = '('+chr(ann["answer"]+ord("a"))+')' + ' ' + ann["choices"][ann["answer"]]
 
         return {
             "image": image,
@@ -89,8 +87,7 @@ class IconQAEvalDataset(VQAEvalDataset, __DisplMixin):
 
         self.annotation = []
 
-        for ann in ann_paths:
-            self.annotation = pd.read_json(ann)
+        self.annotation = pd.read_json(ann_paths[0])
 
         # self._add_instance_ids() -> 왜 필요한지?
 
@@ -111,33 +108,34 @@ class IconQAEvalDataset(VQAEvalDataset, __DisplMixin):
         
         instruction = self.text_processor(instruction)
 
-        answer = '('+chr(ann["answers"]+ord("a"))+')'
+        answer = '('+chr(ann["answer"]+ord("a"))+')' + ' ' + ann["choices"][ann["answer"]]
+        print(answer)
 
         return {
             "image": image,
             "text_input": instruction,
+            "choices": ann["choices"],
             "text_output" : answer,
             "answer" : answer,
-            "question_id": ann["id"]
+            "question_id": str(ann["id"])
         }
     
     def collater(self, samples):
         image_list, question_list, answer_list, id_list = [], [], [], []
-
+        choices = []
         for sample in samples:
             image_list.append(sample["image"])
             question_list.append(sample["text_input"])
-
+            choices.append(sample['choices'])
             answers = sample["text_output"]
-
             answer_list.extend([answers])
-
-            id_list.extend(sample["id"])
+            id_list.extend(sample["question_id"])
 
         return {
             "image": torch.stack(image_list, dim=0),
             "text_input": question_list,
             # "text_output": answer_list,
             "answer": answer_list,
-            "question_id": id_list
+            "question_id": id_list,
+            "choices" : choices
         }
