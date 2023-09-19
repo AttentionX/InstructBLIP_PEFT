@@ -13,6 +13,7 @@ datasets:
         test:
           storage: /input/iconqa/annotations/test.json
       images:
+        storage: /input/iconqa  
         train:
           storage: /input/iconqa/train/choose_txt
         val:
