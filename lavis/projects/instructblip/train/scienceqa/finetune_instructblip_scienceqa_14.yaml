@@ -4,12 +4,20 @@
 # For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
 
 model:
-  arch: blip2_vicuna_instruct_lora # blip2_vicuna_instruct #
+  arch: blip2_vicuna_instruct_qformer_lora # blip2_vicuna_instruct #
   model_type: vicuna7b # vicuna7b #
   load_pretrained: True #pretrain from scratch
   freeze_vit: True
-  llm_lora_r: 8 # lora r 얼마나 줄지
-  llm_lora_apply: attn # attn이면 self attn, ffn이면 ffn
+  lora_r: 2
+  lora_alpha: 8
+  lora_dropout: 0.00
+  self_attention_qv_lora: True
+  selfoutput_lora: False
+  bertoutput_lora: False
+  qformer_crossattention_lora_q: False
+  qformer_crossattention_lora_k: False
+  qformer_crossattention_lora_v: False
+  qformer_crossattention_lora_o: False
 
 datasets:
   scienceqa:
@@ -45,7 +53,7 @@ run:
   task: scienceqa
   # optimizer
   lr_sched: "linear_decay_lr"
-  init_lr: 2e-5
+  init_lr: 5e-4
   min_lr: 0
 
   weight_decay: 0.05
@@ -59,7 +67,7 @@ run:
   inference_method: "rank"
 
   seed: 42
-  output_dir: "/output/results/scienceqa/scienceqa_40"
+  output_dir: "/output/results/scienceqa/scienceqa_14"
 
   amp: True
   resume_ckpt_path: null
