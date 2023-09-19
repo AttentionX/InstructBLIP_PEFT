@@ -34,7 +34,7 @@ class VQA_Vizwiz:
 		if annotation_file != None:
 			print('loading dataset into memory...')
 			time_t = datetime.datetime.utcnow()
-			dataset = json.load(open(annotation_file, 'r'))
+			dataset = json.load(open(annotation_file, 'r', encoding='UTF-8'))
 			print(datetime.datetime.utcnow() - time_t)
 			self.dataset = dataset
 			self.imgToQA = {x['image']:x for x in dataset}

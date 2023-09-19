@@ -442,20 +442,20 @@ class Blip2VicunaInstruct(Blip2Base):
             for i in range(samples["image"].size(0)):
                 this_sample = {
                     "image": samples["image"][i].unsqueeze(0),
-                    "prompt": samples["prompt"],
+                    # "prompt": samples["prompt"],
                 }
 
                 if "text_input" in samples.keys():
                     this_sample["text_input"] = [samples["text_input"][i]]
 
-                if 'context' in samples.keys():
-                    this_sample['context'] = [samples["context"][i]]
+                # if 'context' in samples.keys():
+                #     this_sample['context'] = [samples["context"][i]]
 
-                if 'history' in samples.keys():
-                    this_sample['history'] = [samples["history"][i]]
+                # if 'history' in samples.keys():
+                #     this_sample['history'] = [samples["history"][i]]
 
-                if 'caption' in samples.keys():
-                    this_sample['caption'] = [samples["caption"][i]]
+                # if 'caption' in samples.keys():
+                #     this_sample['caption'] = [samples["caption"][i]]
 
                 this_result = self._predict_class(this_sample, candidates[i], n_segments)
                 results.append(this_result)
@@ -463,7 +463,7 @@ class Blip2VicunaInstruct(Blip2Base):
             try:
                 results = torch.cat(results, dim=0)
             except:
-                results = [res.tolist()[0] for res in results]
+                results = [res[0] for res in results]
 
             return results
 
@@ -476,32 +476,34 @@ class Blip2VicunaInstruct(Blip2Base):
         n_segments=1,
     ):
         image = samples["image"]
-        prompt = samples["prompt"]
+        # prompt = samples["prompt"]
 
         bs = image.size(0)
 
-        if isinstance(prompt, str):
-            prompt = [prompt] * bs
-        else:
-            assert len(prompt) == bs, "The number of prompts must be equal to the batch size."
+        # if isinstance(prompt, str):
+        #     prompt = [prompt] * bs
+        # else:
+        #     assert len(prompt) == bs, "The number of prompts must be equal to the batch size."
 
-        if "text_input" in samples.keys():
-            if type(samples["text_input"][0]) == list:
-                prompt = [prompt[i].format(*samples["text_input"][i]) for i in range(len(prompt))]
-            else:
-                prompt = [prompt[i].format(samples["text_input"][i]) for i in range(len(prompt))]
+        # if "text_input" in samples.keys():
+        #     if type(samples["text_input"][0]) == list:
+        #         prompt = [prompt[i].format(*samples["text_input"][i]) for i in range(len(prompt))]
+        #     else:
+        #         prompt = [prompt[i].format(samples["text_input"][i]) for i in range(len(prompt))]
 
-        # scienceqa
-        if 'context' in samples.keys() and samples['context'] != '':
-            prompt = [f'context: {samples["context"][i]}. {prompt[i]}' for i in range(len(prompt))]
+        # # scienceqa
+        # if 'context' in samples.keys() and samples['context'] != '':
+        #     prompt = [f'context: {samples["context"][i]}. {prompt[i]}' for i in range(len(prompt))]
 
-        # visual dialog
-        if 'history' in samples.keys() and samples['history'][0] != '':
-            prompt = [f'dialog history: {samples["history"][i]}\n{prompt[i]}' for i in range(len(prompt))]
+        # # visual dialog
+        # if 'history' in samples.keys() and samples['history'][0] != '':
+        #     prompt = [f'dialog history: {samples["history"][i]}\n{prompt[i]}' for i in range(len(prompt))]
 
-        if 'caption' in samples.keys() and samples['caption'][0] != '':
-            prompt = [f'This image has the caption "{samples["caption"][i]}". {prompt[i]}' for i in range(len(prompt))]
-
+        # if 'caption' in samples.keys() and samples['caption'][0] != '':
+        #     prompt = [f'This image has the caption "{samples["caption"][i]}". {prompt[i]}' for i in range(len(prompt))]
+        
+        prompt = [samples['text_input'][i] for i in range(len(image))]
+        
         query_tokens = self.query_tokens.expand(bs, -1, -1)
         if self.qformer_text_input:
             text_Qformer = self.tokenizer(
@@ -648,8 +650,9 @@ class Blip2VicunaInstruct(Blip2Base):
 
             all_losses = torch.cat(all_losses, dim=-1)
             output_class_ranks = torch.argsort(all_losses, dim=-1)
+            top_predicted_classes = [candidates[idx] for idx in output_class_ranks[:, 0].tolist()]
 
-        return output_class_ranks
+        return top_predicted_classes
 
     def _lemmatize(self, answers):
         def apply(answer):

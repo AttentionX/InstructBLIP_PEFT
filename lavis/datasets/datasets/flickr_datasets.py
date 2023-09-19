@@ -62,6 +62,10 @@ class FlickrEvalDataset(CaptionEvalDataset):
         split (string): val or test
         """
         super().__init__(vis_processor, text_processor, vis_root, ann_paths)
+        self.annotation = []
+        for ann in ann_paths:
+            with open(ann, 'r') as f:
+                self.annotation += json.load(f)
         self.text_processor = text_processor
 
     def __getitem__(self, index):

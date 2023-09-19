@@ -53,11 +53,11 @@ datasets:
 run:
   task: flickr30k_instruct
   # optimizer
-  lr_sched: "linear_warmup_step_lr"
+  lr_sched: "linear_decay_lr"
   init_lr: 5e-4
   min_lr: 0
-  warmup_lr: 5e-4 
-  warmup_steps: 0 
+  warmup_lr: 5e-6
+  warmup_steps: 0
 
   # for cococapeval
   num_beams: 1
@@ -68,6 +68,8 @@ run:
   weight_decay: 0.05
   max_epoch: 10
   batch_size_train: 1
+  
+  accum_grad_iters: 16
   batch_size_eval: 1
   num_workers: 4
 

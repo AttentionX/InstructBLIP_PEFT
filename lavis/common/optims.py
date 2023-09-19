@@ -115,12 +115,46 @@ class ConstantLRScheduler:
             for param_group in self.optimizer.param_groups:
                 param_group["lr"] = self.lr
 
+@registry.register_lr_scheduler("linear_decay_lr")
+class LinearDecayLRScheduler:
+    def __init__(
+        self,
+        optimizer,
+        max_epoch,
+        min_lr,
+        init_lr,
+        **kwargs
+    ):
+        self.optimizer = optimizer
+
+        self.max_epoch = max_epoch
+        self.min_lr = min_lr
+
+        self.init_lr = init_lr
+        
+
+    def step(self, cur_epoch, cur_step):
+        linear_decay_lr_schedule(
+            epoch=cur_epoch,
+            optimizer=self.optimizer,
+            max_epoch=self.max_epoch,
+            init_lr=self.init_lr,
+            min_lr=self.min_lr,
+        )
+
 
 def cosine_lr_schedule(optimizer, epoch, max_epoch, init_lr, min_lr):
     """Decay the learning rate"""
     lr = (init_lr - min_lr) * 0.5 * (
         1.0 + math.cos(math.pi * epoch / max_epoch)
     ) + min_lr
+    for param_group in optimizer.param_groups:
+        param_group["lr"] = lr
+
+
+def linear_decay_lr_schedule(optimizer, epoch, max_epoch, init_lr, min_lr):
+    """Decay the learning rate"""
+    lr = init_lr - (init_lr - min_lr) * (epoch/max_epoch)
     for param_group in optimizer.param_groups:
         param_group["lr"] = lr
 
