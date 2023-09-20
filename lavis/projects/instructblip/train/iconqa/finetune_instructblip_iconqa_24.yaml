@@ -4,12 +4,12 @@
 # For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
 
 model:
-  arch: blip2_vicuna_instruct_lora # blip2_vicuna_instruct #
-  model_type: vicuna7b # vicuna7b #
+  arch: blip2_vicuna_instruct_qformer_lora
+  model_type: vicuna7b
   load_pretrained: True #pretrain from scratch
   freeze_vit: True
-  llm_lora_r: 8 # lora r 얼마나 줄지
-  llm_lora_apply: attn # attn이면 self attn, ffn이면 ffn
+  llm_lora_r: 4
+  llm_lora_apply: ffn
 
 datasets:
   iconqa:
@@ -31,8 +31,10 @@ run:
   task: iconqa
   # optimizer
   lr_sched: "linear_decay_lr"
-  init_lr: 2e-5
+  init_lr: 5e-4
   min_lr: 0
+  warmup_lr: 5e-4
+  warmup_steps: 0
 
   weight_decay: 0.05
   max_epoch: 10
@@ -45,7 +47,7 @@ run:
   inference_method: "rank"
 
   seed: 42
-  output_dir: "/output/results/iconqa/iconqa_40"
+  output_dir: "/output/results/iconqa/iconqa_24"
 
   amp: True
   resume_ckpt_path: null

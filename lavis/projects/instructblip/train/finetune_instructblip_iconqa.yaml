@@ -4,8 +4,8 @@
 # For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
 
 model:
-  arch: blip2_t5_instruct # blip2_vicuna_instruct #
-  model_type: flant5xl # vicuna7b #
+  arch: blip2_vicuna_instruct # blip2_t5_instruct  #
+  model_type: vicuna7b # flant5xl  #
   load_pretrained: True #pretrain from scratch
   freeze_vit: True
 
@@ -36,9 +36,10 @@ run:
   warmup_lr: 1e-6
 
   weight_decay: 0.05
-  max_epoch: 10
-  batch_size_train: 2
+  max_epoch: 1
+  batch_size_train: 8
   batch_size_eval: 1
+  accum_grad_iters: 2
   num_workers: 4
   warmup_steps: 5000
 
@@ -46,7 +47,7 @@ run:
   inference_method: "rank"
 
   seed: 42
-  output_dir: "output/InstructBLIP/finetune_iconqa"
+  output_dir: "output/InstructBLIP/finetune_iconqa_16"
 
   amp: True
   resume_ckpt_path: null
