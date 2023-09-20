@@ -1,18 +1,19 @@
- # Copyright (c) 2022, salesforce.com, inc.
- # All rights reserved.
- # SPDX-License-Identifier: BSD-3-Clause
- # For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
+# Copyright (c) 2022, salesforce.com, inc.
+# All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause
+# For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
 
 model:
-  arch: blip2_vicuna_instruct
-  model_type: vicuna7b # 
+  arch: blip2_vicuna_instruct_lora
+  model_type: vicuna7b
   load_pretrained: True #pretrain from scratch
   freeze_vit: True
-
+  llm_lora_r: 8
+  llm_lora_apply: attn
 
 datasets:
   scienceqa:
-    train_samples_portion: 500
+    train_samples_portion: all 
     vis_processor:
       train:
         name: "blip2_image_train"
@@ -30,19 +31,20 @@ run:
   task: scienceqa
   # optimizer
   lr_sched: "linear_decay_lr"
-  init_lr: 5e-4
+  init_lr: 2e-5
   min_lr: 0
-
-
-  # log_freq: 250
+  warmup_lr: 2e-5
+  warmup_steps: 0
 
   weight_decay: 0.05
-  max_epoch: 10
-  batch_size_train: 1
-  batch_size_eval: 1
+  max_epoch: 15
+  batch_size_train: 2
+  accum_grad_iters: 8
+  batch_size_eval: 4
   num_workers: 4
-  # warmup_steps: 5000
-  accum_grad_iters: 16
+
+  # inference-specific
+  inference_method: "rank"
 
   seed: 42
   output_dir: "/output/results/scienceqa/scienceqa_29"
@@ -50,7 +52,7 @@ run:
   amp: True
   resume_ckpt_path: null
 
-  evaluate: False 
+  evaluate: False
   train_splits: ["train"]
   valid_splits: ["val"]
   test_splits: ["test"]
