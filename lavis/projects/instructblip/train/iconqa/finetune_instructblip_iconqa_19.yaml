@@ -4,7 +4,7 @@
 # For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
 
 model:
-  arch: blip2_vicuna_instruct_qformer_lora
+  arch: blip2_vicuna_instruct
   model_type: vicuna7b
   load_pretrained: True #pretrain from scratch
   freeze_vit: True
@@ -35,10 +35,10 @@ run:
   warmup_steps: 0
 
   weight_decay: 0.05
-  max_epoch: 10
-  batch_size_train: 4
-  accum_grad_iters: 4
-  batch_size_eval: 1
+  max_epoch: 15
+  batch_size_train: 2
+  accum_grad_iters: 8
+  batch_size_eval: 4
   num_workers: 4
 
   # inference-specific

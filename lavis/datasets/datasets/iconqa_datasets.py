@@ -109,7 +109,6 @@ class IconQAEvalDataset(VQAEvalDataset, __DisplMixin):
         instruction = self.text_processor(instruction)
 
         answer = '('+chr(ann["answer"]+ord("a"))+')' + ' ' + ann["choices"][ann["answer"]]
-        print(answer)
 
         return {
             "image": image,
