@@ -4,23 +4,23 @@
 # For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
 
 model:
-  arch: blip2_vicuna_instruct_qformer_lora
-  model_type: vicuna7b
+  arch: blip2_vicuna_instruct_qformer_lora # blip2_vicuna_instruct #
+  model_type: vicuna7b # vicuna7b #
   load_pretrained: True #pretrain from scratch
   freeze_vit: True
   lora_r: 4
-  lora_alpha: 8
-  lora_dropout: 0
-  self_attention_qv_lora: False
-  self_attention_output_lora: False
-  ffn_lora: False
-  qformer_crossattention_lora_q: True
+  lora_alpha: 16
+  lora_dropout: 0.05
+  selfattention_lora: False
+  selfoutput_lora: False
+  bertoutput_lora: False
+  qformer_crossattention_lora_q: False
   qformer_crossattention_lora_k: True
   qformer_crossattention_lora_v: True
-  qformer_crossattention_lora_o: True
+  qformer_crossattention_lora_o: False
 
 datasets:
-  iconqa:
+  scienceqa:
     train_samples_portion: all
     vis_processor:
       train:
@@ -34,15 +34,27 @@ datasets:
         name: "instruct_blip_question"
       eval:
         name: "instruct_blip_question"
+    # build_info:
+    #   images:
+    #     storage: "/root/InstructBLIP_PEFT/lavis/scienceqa"
+# vg_caption: # name of the dataset builder
+#   vis_processor:
+#       train:
+#         name: "blip_image_train"
+#         image_size: 224
+#   text_processor:
+#       train:
+#         name: "blip_caption"
+#     build_info:
+#         images:
+#             storage: '//export/share/datasets/vision/visual-genome/image/'
 
 run:
-  task: iconqa
+  task: scienceqa
   # optimizer
   lr_sched: "linear_decay_lr"
   init_lr: 5e-4
   min_lr: 0
-  warmup_lr: 5e-4
-  warmup_steps: 0
 
   weight_decay: 0.05
   max_epoch: 10
@@ -55,7 +67,7 @@ run:
   inference_method: "rank"
 
   seed: 42
-  output_dir: "/output/results/iconqa/iconqa_11"
+  output_dir: "/output/results/scienceqa/scienceqa_42"
 
   amp: True
   resume_ckpt_path: null

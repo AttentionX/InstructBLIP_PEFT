@@ -181,7 +181,7 @@ class RunnerBase:
         """
         if self._dataloaders is None:
             # reoganize datasets by split and concatenate/chain if necessary
-            dataset_ratios = self.config.run_cfg.get("train_dataset_ratios", None)
+            dataset_ratios = self.config.run_cfg.get("trai n_dataset_ratios", None)
 
             # concatenate map-style datasets and chain wds.DataPipe datasets separately
             # training set becomes a tuple (ConcatDataset, ChainDataset), both are

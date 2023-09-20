@@ -8,20 +8,10 @@ model:
   model_type: vicuna7b
   load_pretrained: True #pretrain from scratch
   freeze_vit: True
-  lora_r: 4
-  lora_alpha: 8
-  lora_dropout: 0
-  self_attention_qv_lora: False
-  self_attention_output_lora: False
-  ffn_lora: False
-  qformer_crossattention_lora_q: True
-  qformer_crossattention_lora_k: True
-  qformer_crossattention_lora_v: True
-  qformer_crossattention_lora_o: True
 
 datasets:
   iconqa:
-    train_samples_portion: all
+    train_samples_portion: 1000
     vis_processor:
       train:
         name: "blip2_image_train"
@@ -39,9 +29,9 @@ run:
   task: iconqa
   # optimizer
   lr_sched: "linear_decay_lr"
-  init_lr: 5e-4
+  init_lr: 2e-5
   min_lr: 0
-  warmup_lr: 5e-4
+  warmup_lr: 2e-5
   warmup_steps: 0
 
   weight_decay: 0.05
@@ -55,7 +45,7 @@ run:
   inference_method: "rank"
 
   seed: 42
-  output_dir: "/output/results/iconqa/iconqa_11"
+  output_dir: "/output/results/iconqa/iconqa_20"
 
   amp: True
   resume_ckpt_path: null
