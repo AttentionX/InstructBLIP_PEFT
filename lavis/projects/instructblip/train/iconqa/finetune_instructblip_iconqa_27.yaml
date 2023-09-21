@@ -38,9 +38,9 @@ run:
 
   weight_decay: 0.05
   max_epoch: 10
-  batch_size_train: 2
-  accum_grad_iters: 8
-  batch_size_eval: 4
+  batch_size_train: 8
+  accum_grad_iters: 2
+  batch_size_eval: 1
   num_workers: 4
 
   # inference-specific
