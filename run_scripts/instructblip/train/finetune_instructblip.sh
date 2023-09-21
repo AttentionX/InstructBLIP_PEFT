@@ -1,1 +1,1 @@
-python3 -m torch.distributed.run --nproc_per_node=1 train.py --cfg-path lavis/projects/instructblip/train/finetune_instructblip.yaml
+python3 -m torch.distributed.run --nproc_per_node=1 train.py --cfg-path lavis/projects/instructblip/train/iconqa/finetune_instructblip_iconqa_25.yaml
