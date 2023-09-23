@@ -24,7 +24,7 @@ from transformers.modeling_outputs import BaseModelOutput
 import lavis.models.blip2_models.Qformer_lora as Qformer_lora 
 from lavis.common.utils import is_url
 from lavis.common.dist_utils import download_cached_file
-from lavis.models.blip2_models.Qformer_lora import lora, custom_lora, mark_only_lora_as_trainable
+from lavis.models.blip2_models.Qformer_lora import lora, custom_lora, mark_only_lora_as_trainable, check_lora_application
 
 
 @registry.register_model("blip2_t5_instruct_qformer_lora")
@@ -95,6 +95,12 @@ class Blip2T5InstructQformerLoRA(Blip2Base):
         # Train only the Qformer LoRA
         
         mark_only_lora_as_trainable(self.Qformer)
+        
+        check_lora_application(self.Qformer)
+        
+        num_params = sum([p.numel() for p in self.Qformer.parameters() if p.requires_grad])
+        print(f"Number of trainable parameters in Qformer: {num_params}")
+        
         self.t5_tokenizer = T5TokenizerFast.from_pretrained(t5_model, truncation_side='left')
         self.t5_output_tokenizer = T5TokenizerFast.from_pretrained(t5_model, truncation_side='right')
 
