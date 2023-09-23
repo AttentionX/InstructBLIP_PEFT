@@ -329,6 +329,42 @@ class MergedLinear(nn.Linear, LoRALayer):
             return result
 
 
+def check_lora_application(Qformer: nn.Module):
+    bert_model = Qformer.bert
+    encoder = bert_model.encoder
+    layer = encoder.layer[0]
+    if hasattr(layer, "attention"):
+        attention = layer.attention
+        self_attention = attention.self
+
+        if isinstance(self_attention.query, MergedLinear):
+            print(f"Layer {layer.layer_num}: LoRA is applied to selfattention query with r value: {self_attention.query.r}")
+
+        if hasattr(self_attention, "key") and isinstance(self_attention.key, MergedLinear):
+            print(f"Layer {layer.layer_num}: LoRA is applied to selfattention key with r value: {self_attention.key.r}")
+
+        if hasattr(self_attention, "value") and isinstance(self_attention.value, MergedLinear):
+            print(f"Layer {layer.layer_num}: LoRA is applied to selfattention value with r value: {self_attention.value.r}")
+    
+    if hasattr(layer, "crossattention"):
+        attention = layer.crossattention
+        crossattention = attention.self
+
+        if isinstance(crossattention.query, MergedLinear):
+            print(f"Layer {layer.layer_num}: LoRA is applied to crossattention query with r value: {crossattention.query.r}")
+
+        if hasattr(crossattention, "key") and isinstance(crossattention.key, MergedLinear):
+            print(f"Layer {layer.layer_num}: LoRA is applied to crossattention key with r value: {crossattention.key.r}")
+
+        if hasattr(crossattention, "value") and isinstance(crossattention.value, MergedLinear):
+            print(f"Layer {layer.layer_num}: LoRA is applied to crossattention value with r value: {crossattention.value.r}")
+            
+    if hasattr(layer, "output"):
+        bert_output = layer.output
+        if hasattr(bert_output, "dense") and isinstance(bert_output.dense, MergedLinear):
+            print(f"Layer {layer.layer_num}: LoRA is applied to ffn with r value: {bert_output.dense.r}")
+    
+
 def mark_only_lora_as_trainable(model: nn.Module, bias: str = 'none') -> None:
     """Freeze all modules except LoRA's and depending on 'bias' value unfreezes bias weights.
 
