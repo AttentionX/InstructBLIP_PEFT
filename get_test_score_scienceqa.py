@@ -31,7 +31,7 @@ if __name__ == '__main__':
 
     int_value = int(sys.argv[1])
     # TODO: Fix this base_path to each local environment
-    base_path = f"/home/engineer_a/nfs-mount/results/scienceqa/scienceqa_{int_value}"
+    base_path = f"/output/results/scienceqa/scienceqa_{int_value}"
     latest_dir = find_latest_subdir(base_path)
     json_path = os.path.join(latest_dir, "result/test_scienceqa_result.json")
 
