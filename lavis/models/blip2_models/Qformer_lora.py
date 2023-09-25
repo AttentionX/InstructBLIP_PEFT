@@ -349,6 +349,7 @@ def check_lora_application(Qformer: nn.Module):
     if hasattr(layer, "crossattention"):
         attention = layer.crossattention
         crossattention = attention.self
+        o = attention.output
 
         if isinstance(crossattention.query, MergedLinear):
             print(f"Layer {layer.layer_num}: LoRA is applied to crossattention query with r value: {crossattention.query.r}")
@@ -358,6 +359,8 @@ def check_lora_application(Qformer: nn.Module):
 
         if hasattr(crossattention, "value") and isinstance(crossattention.value, MergedLinear):
             print(f"Layer {layer.layer_num}: LoRA is applied to crossattention value with r value: {crossattention.value.r}")
+        if hasattr(o, "dense") and isinstance(o.dense, MergedLinear):
+            print(f"Layer {layer.layer_num}: LoRA is applied to crossattention output with r value: {o.dense.r}")
             
     if hasattr(layer, "output"):
         bert_output = layer.output
