@@ -8,16 +8,16 @@ model:
   model_type: flant5xl
   load_pretrained: True #pretrain from scratch
   freeze_vit: True
-  lora_r: 8
+  lora_r: 1
   lora_alpha: 8
   lora_dropout: 0
-  self_attention_qv_lora: False
+  self_attention_qv_lora: True
   self_attention_output_lora: False
   ffn_lora: False
-  qformer_crossattention_lora_q: True
-  qformer_crossattention_lora_k: True
-  qformer_crossattention_lora_v: True
-  qformer_crossattention_lora_o: True
+  qformer_crossattention_lora_q: False
+  qformer_crossattention_lora_k: False
+  qformer_crossattention_lora_v: False
+  qformer_crossattention_lora_o: False
 
 datasets:
   scienceqa:

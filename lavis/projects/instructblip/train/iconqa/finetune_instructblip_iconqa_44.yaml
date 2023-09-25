@@ -8,7 +8,7 @@ model:
   model_type: flant5xl
   load_pretrained: True #pretrain from scratch
   freeze_vit: True
-  lora_r: 8
+  lora_r: 1
   lora_alpha: 8
   lora_dropout: 0
   self_attention_qv_lora: True
