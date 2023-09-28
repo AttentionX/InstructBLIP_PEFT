@@ -24,8 +24,8 @@ model:
   qformer_crossattention_lora_o: True
 
 datasets:
-  scienceqa:
-    train_samples_portion: all 
+  iconqa:
+    train_samples_portion: all
     vis_processor:
       train:
         name: "blip2_image_train"
@@ -40,7 +40,7 @@ datasets:
         name: "instruct_blip_question"
 
 run:
-  task: scienceqa
+  task: iconqa
   # optimizer
   lr_sched: "linear_decay_lr"
   init_lr: 5e-4
@@ -59,7 +59,7 @@ run:
   inference_method: "rank"
 
   seed: 42
-  output_dir: "/output/results/scienceqa/scienceqa_59"
+  output_dir: "/output/results/iconqa/iconqa_59"
 
   amp: True
   resume_ckpt_path: null

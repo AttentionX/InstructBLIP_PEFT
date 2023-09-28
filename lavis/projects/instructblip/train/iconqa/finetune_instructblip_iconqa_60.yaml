@@ -9,10 +9,10 @@ model:
   load_pretrained: True #pretrain from scratch
   freeze_vit: True
   # LLM PEFT parameters 
-  llm_lora_r: 1
+  llm_lora_r: 2
   llm_lora_apply: all
   # qformer PEFT parameters 
-  lora_r: 1
+  lora_r: 2
   lora_alpha: 8
   lora_dropout: 0
   self_attention_qv_lora: True
@@ -24,8 +24,8 @@ model:
   qformer_crossattention_lora_o: True
 
 datasets:
-  scienceqa:
-    train_samples_portion: all 
+  iconqa:
+    train_samples_portion: all
     vis_processor:
       train:
         name: "blip2_image_train"
@@ -40,7 +40,7 @@ datasets:
         name: "instruct_blip_question"
 
 run:
-  task: scienceqa
+  task: iconqa
   # optimizer
   lr_sched: "linear_decay_lr"
   init_lr: 5e-4
@@ -59,7 +59,7 @@ run:
   inference_method: "rank"
 
   seed: 42
-  output_dir: "/output/results/scienceqa/scienceqa_59"
+  output_dir: "/output/results/iconqa/iconqa_60"
 
   amp: True
   resume_ckpt_path: null
