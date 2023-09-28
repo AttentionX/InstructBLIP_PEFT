@@ -139,6 +139,8 @@ class Blip2T5InstructQformerLLMLoRA(Blip2Base):
             target_modules = ['q','v'] 
         elif llm_lora_apply == "ffn":
             target_modules = ["wi", "wo", "wi_1", "wi_0"]
+        elif llm_lora_apply == "all":
+            target_modules = ['q', 'v', "wi", "wo", "wi_1", "wi_0"] 
         else: 
             print("Wrong llm_lora_apply value in yaml!!")
         print(f"applying llm lora on {llm_lora_apply}")

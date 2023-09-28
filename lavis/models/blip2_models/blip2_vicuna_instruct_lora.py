@@ -130,6 +130,8 @@ class Blip2VicunaInstructLoRA(Blip2Base):
             target_modules = ['q_proj','v_proj'] 
         elif llm_lora_apply == "ffn":
             target_modules = ['gate_proj', "up_proj", "down_proj"]
+        elif llm_lora_apply == "all":
+            target_modules = ['q_proj','v_proj', 'gate_proj', "up_proj", "down_proj"] 
         else: 
             print("Wrong llm_lora_apply value in yaml!!")
         print(f"applying llm lora on {llm_lora_apply}")
