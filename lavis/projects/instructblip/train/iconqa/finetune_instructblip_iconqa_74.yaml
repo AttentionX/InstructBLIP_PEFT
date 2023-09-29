@@ -4,16 +4,16 @@
 # For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
 
 model:
-  arch: blip2_t5_instruct_lora
-  model_type: flant5xl
+  arch: blip2_vicuna_instruct_lora
+  model_type: vicuna7b
   load_pretrained: True #pretrain from scratch
   freeze_vit: True
-  llm_lora_r: 4
+  llm_lora_r: 8
   llm_lora_apply: all
 
 datasets:
-  scienceqa:
-    train_samples_portion: all 
+  iconqa:
+    train_samples_portion: all
     vis_processor:
       train:
         name: "blip2_image_train"
@@ -28,7 +28,7 @@ datasets:
         name: "instruct_blip_question"
 
 run:
-  task: scienceqa
+  task: iconqa
   # optimizer
   lr_sched: "linear_decay_lr"
   init_lr: 2e-5
@@ -38,8 +38,8 @@ run:
 
   weight_decay: 0.05
   max_epoch: 15
-  batch_size_train: 16
-  accum_grad_iters: 1
+  batch_size_train: 8
+  accum_grad_iters: 2
   batch_size_eval: 1
   num_workers: 4
 
@@ -47,7 +47,7 @@ run:
   inference_method: "rank"
 
   seed: 42
-  output_dir: "/output/results/scienceqa/scienceqa_81"
+  output_dir: "/output/results/iconqa/iconqa_74"
 
   amp: True
   resume_ckpt_path: null

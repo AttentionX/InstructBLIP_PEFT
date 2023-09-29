@@ -3,13 +3,27 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
 
+# Freeze Qformer, Train LLM with LoRA
+
 model:
-  arch: blip2_t5_instruct_lora
+  arch: blip2_t5_instruct_qformer_llm_lora
   model_type: flant5xl
   load_pretrained: True #pretrain from scratch
   freeze_vit: True
-  llm_lora_r: 4
-  llm_lora_apply: all
+  # LLM PEFT parameters 
+  llm_lora_r: 8
+  llm_lora_apply: attn
+  # qformer PEFT parameters 
+  lora_r: 0
+  lora_alpha: 8
+  lora_dropout: 0
+  self_attention_qv_lora: False
+  self_attention_output_lora: False
+  ffn_lora: False
+  qformer_crossattention_lora_q: False
+  qformer_crossattention_lora_k: False
+  qformer_crossattention_lora_v: False
+  qformer_crossattention_lora_o: False
 
 datasets:
   scienceqa:
@@ -47,7 +61,7 @@ run:
   inference_method: "rank"
 
   seed: 42
-  output_dir: "/output/results/scienceqa/scienceqa_81"
+  output_dir: "/output/results/scienceqa/scienceqa_101"
 
   amp: True
   resume_ckpt_path: null
