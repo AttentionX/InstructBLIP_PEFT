@@ -95,11 +95,11 @@ for id in tqdm(test_ids):
     }
     test_annotation.append(ann)
 
-with open("/inputs/scienceqa/scienceqa_train.json", 'w') as file:
+with open("/input/scienceqa/scienceqa_train.json", 'w') as file:
     json.dump(train_annotation, file)
 
-with open("/inputs/scienceqa/scienceqa_test.json", 'w') as file:
+with open("/input/scienceqa/scienceqa_test.json", 'w') as file:
     json.dump(test_annotation, file)
 
-with open("/inputs/scienceqa/scienceqa_val.json", 'w') as file:
+with open("/input/scienceqa/scienceqa_val.json", 'w') as file:
     json.dump(val_annotation, file)
