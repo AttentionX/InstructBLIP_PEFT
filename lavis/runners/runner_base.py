@@ -389,6 +389,9 @@ class RunnerBase:
         #                 self.log_stats(val_log, split_name)    
                                     
         count_for_early_stopping = 0   
+        early_stopping_patience = 3 
+        disable_early_stopping = self.config.run_cfg.get("disable_early_stopping", False)
+        
         for cur_epoch in range(self.start_epoch, self.max_epoch):
             # training phase
             if not self.evaluate_only:
@@ -438,7 +441,7 @@ class RunnerBase:
             dist.barrier()
 
         
-            if count_for_early_stopping >= 3:
+            if (not disable_early_stopping) and count_for_early_stopping >= early_stopping_patience:
                 logging.info("Early stopped by reaching plaetu.")
                 break
         # testing phase <- 이걸 위로 올리면 test set metric 확인 가능
