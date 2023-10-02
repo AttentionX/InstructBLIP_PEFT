@@ -4,20 +4,12 @@
 # For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
 
 model:
-  arch: blip2_vicuna_instruct_qformer_lora
-  model_type: vicuna7b
+  arch: blip2_t5_instruct_lora
+  model_type: flant5xl
   load_pretrained: True #pretrain from scratch
   freeze_vit: True
-  lora_r: 8
-  lora_alpha: 8
-  lora_dropout: 0
-  self_attention_qv_lora: False
-  self_attention_output_lora: False
-  ffn_lora: True
-  qformer_crossattention_lora_q: False
-  qformer_crossattention_lora_k: False
-  qformer_crossattention_lora_v: False
-  qformer_crossattention_lora_o: False
+  llm_lora_r: 8
+  llm_lora_apply: ffn
 
 datasets:
   scienceqa:
@@ -34,20 +26,20 @@ datasets:
         name: "instruct_blip_question"
       eval:
         name: "instruct_blip_question"
-        
+
 run:
   task: scienceqa
   # optimizer
   lr_sched: "linear_decay_lr"
-  init_lr: 5e-4
+  init_lr: 2e-5
   min_lr: 0
-  warmup_lr: 5e-4
+  warmup_lr: 2e-5
   warmup_steps: 0
 
   weight_decay: 0.05
   max_epoch: 15
-  batch_size_train: 8
-  accum_grad_iters: 2
+  batch_size_train: 16
+  accum_grad_iters: 1
   batch_size_eval: 1
   num_workers: 4
 
