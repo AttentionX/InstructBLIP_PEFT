@@ -9,10 +9,10 @@ model:
   load_pretrained: True #pretrain from scratch
   freeze_vit: True
   # LLM PEFT parameters 
-  llm_lora_r: 4
+  llm_lora_r: 1
   llm_lora_apply: all
   # qformer PEFT parameters 
-  lora_r: 4
+  lora_r: 1
   lora_alpha: 8
   lora_dropout: 0
   self_attention_qv_lora: True

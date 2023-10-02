@@ -9,10 +9,10 @@ model:
   load_pretrained: True #pretrain from scratch
   freeze_vit: True
   # LLM PEFT parameters 
-  llm_lora_r: 8
+  llm_lora_r: 2
   llm_lora_apply: all
   # qformer PEFT parameters 
-  lora_r: 8
+  lora_r: 2
   lora_alpha: 8
   lora_dropout: 0
   self_attention_qv_lora: True
@@ -50,6 +50,7 @@ run:
 
   weight_decay: 0.05
   max_epoch: 15
+  disable_early_stopping: True
   batch_size_train: 8
   accum_grad_iters: 2
   batch_size_eval: 1
