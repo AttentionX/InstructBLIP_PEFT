@@ -9,6 +9,8 @@ This will save preprocessed scienceQA dataset in `/input/scienceqa/`.
 
 1. download multi-text-choice dataset from https://iconqa.github.io/
 
+IconQA does not need extra preprocessing.
+
 ### How to run
 
 **Dataset**
