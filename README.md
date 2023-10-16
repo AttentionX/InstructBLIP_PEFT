@@ -61,6 +61,34 @@ This is the Instruction Format for IconQA dataset.
 
 ## Train
 
+We train our model using a single A100 GPU.
+
+### Hyperparameters
+
+- Optimizer : `AdamW`
+- Learning Rate Scheduler : linear decay
+- Weight Decay : 0.05
+- Epoch : 15
+- Learning Rate, Batch Size, Gradient Accumulation Step
+  | | Learning Rate | Micro Batch Size | Accumulation Step |
+  | -------------------------------------- | ------------- | ---------------- | ----------------- |
+  | LLM LoRA (ffn, FlanT5-XL) | 5e-4 | 16 | 1 |
+  | LLM LoRA (attn, FlanT5-XL) | 5e-4 | 16 | 1 |
+  | LLM LoRA (all, FlanT5-XL) | 5e-4 | 16 | 1 |
+  | Q-Former LoRA (ffn, FlanT5-XL) | 5e-4 | 16 | 1 |
+  | Q-Former LoRA (self-attn, FlanT5-XL) | 5e-4 | 16 | 1 |
+  | Q-Former LoRA (cross-attn, FlanT5-XL) | 5e-4 | 16 | 1 |
+  | Q-Former LoRA (all, FlanT5-XL) | 5e-4 | 16 | 1 |
+  | Q-Former and LLM LoRA (all, FlanT5-XL) | 2e-5 | 16 | 1 |
+  | LLM LoRA (ffn, Vicuna-7B) | 5e-4 | 8 | 2 |
+  | LLM LoRA (attn, Vicuna-7B) | 5e-4 | 8 | 2 |
+  | LLM LoRA (all, Vicuna-7B) | 5e-4 | 8 | 2 |
+  | Q-Former LoRA (ffn, Vicuna-7B) | 5e-4 | 8 | 2 |
+  | Q-Former LoRA (self-attn, Vicuna-7B) | 5e-4 | 8 | 2 |
+  | Q-Former LoRA (cross-attn, Vicuna-7B) | 5e-4 | 8 | 2 |
+  | Q-Former LoRA (all, Vicuna-7B) | 5e-4 | 8 | 2 |
+  | Q-Former and LLM LoRA (all, Vicuna-7B) | 2e-5 | 8 | 2 |
+
 ### Dataset
 
 Datasets must be placed in the location specified in the file `lavis/config/datasets/{dataset_name}/defaults.yaml` .
