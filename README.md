@@ -1,24 +1,102 @@
-### For ScienceQA dataset
+# Parameter-Efficient Fine-tuning of InstructBLIP for Visual Reasoning Tasks
 
-1. download ScienceQA dataset from https://scienceqa.github.io/
+we inspect the effectiveness of PEFT methods on the Q-Former and LLLM layer for Visual Reasoning Tasks.
+
+## Overview
+
+Visual language models have recently demonstrated enhanced capabilities in visual reasoning tasks by employing external modules upon language models for visual language alignment. InstructBLIP uses a Q-Former and a projection layer to convert input image embeddings into soft visual prompts to enhance the instruction-following capabilities of large language models (LLMs). Although fine-tuning InstructBLIP has shown great results in downstream tasks, previous works have been restrictive, only fine-tuning the Q-Former, while freezing the LLM.
+
+In this work, we investigate the performance of the PEFT method, LoRA, on both the Q-Former and the base LLMs, specifically Flan-T5-XL and Vicuna-7B, using visual reasoning benchmarks ScienceQA and IconQA. We observe that training the Q-Former with LoRA achieves comparable performance to full fine-tuning using under 2\% of the trainable parameters. Furthermore, fine-tuning the LLM consistently result in better performances, regardless of how the Q-Former is fine-tuned.
+Lastly, applying LoRA to both the LLM and the Q-Former surpasses the performance of only full fine-tuning the Q-Former while using less than 10\% of the trainable parameters. These results highlight the effectiveness of applying PEFT to visual language models for visual reasoning tasks.
+
+## Contents (index)
+
+- [Install](#install)
+- [Train](#train)
+- [Citation](#citation)
+- [Acknowledgement](#acknowledgement)
+
+## Install
+
+### Install Code
+
+1. Clone this repository and navigate to InstructBLIP_PEFT folder.
+
+```bash
+git clone https://github.com/AttentionX/InstructBLIP_PEFT.git
+cd InstructBLIP_PEFT
+```
+
+2. Install Package
+
+```bash
+pip install -r requirements.txt
+```
+
+### Install ScienceQA dataset
+
+1. download ScienceQA dataset from <https://scienceqa.github.io/>
 2. run scienceqa_data_preprocess.py
 
 This will save preprocessed scienceQA dataset in `/input/scienceqa/`.
 
-### For IconQA dataset
+This is the Instruction Format for ScienceQA dataset.
 
-1. download multi-text-choice dataset from https://iconqa.github.io/
+```md
+<Image> Context: { {hint} {lecture} } Question: { {question} } Options: { {choices} } Answer: (a) { {answer} }
+```
+
+### Install IconQA dataset
+
+1. download multi-text-choice dataset from <https://iconqa.github.io/>
 2. run iconqa_data_preprocess.py
 
 This will save preprocessed scienceQA dataset in `/input/iconqa/`.
 
-### How to run
+This is the Instruction Format for IconQA dataset.
 
-**Dataset**
+```md
+<Image> Question: { {question} } Options: { {choices} }. Short answer: (a) { {answer} }
+```
+
+## Train
+
+### Dataset
 
 Datasets must be placed in the location specified in the file `lavis/config/datasets/{dataset_name}/defaults.yaml` .
 
-**Experiment ID**
+This is an example of dataset default.yaml file.
+
+```yaml
+# lavis/config/datasets/scienceqa/default.yaml
+datasets:
+  scienceqa:
+    # data_dir: ${env.data_dir}/datasets
+    data_type: images # [images|videos|features]
+
+    build_info:
+      # Be careful not to append minus sign (-) before split to avoid itemizing
+      annotations:
+        train:
+          storage: /input/scienceqa/scienceqa_train.json
+        val:
+          storage: /input/scienceqa/scienceqa_val.json
+        test:
+          storage: /input/scienceqa/scienceqa_test.json
+      images:
+        storage: /input
+        train:
+          storage: /input
+        val:
+          storage: /input
+        test:
+          storage: /input
+```
+
+In this case, dataset json files (`scienceqa_train.json`, `scienceqa_test.json` and `scienceqa_val.json`) should be located at `/input/scienceqa`.  
+Images files should be located at `input/scienceqa/images/train`, `input/scienceqa/images/test` and `input/scienceqa/images/val` because of the content in json files.
+
+### Experiment ID
 
 This is the table for the ID for each experiements.
 
@@ -41,18 +119,24 @@ This is the table for the ID for each experiements.
 | Q-Former LoRA (all, Vicuna-7B)         | 57    | 58    | 59    | 60    |
 | Q-Former and LLM LoRA (all, Vicuna-7B) | 61    | 62    | 63    | 64    |
 
-**Run Script**
+### Run Script
 
 You can run experiment with this command.
 
-```python
-bash run_scripts/instructblkp/train/run_finetune_instructblip_experiments.sh {dataset_name} {experiment_id}
+```bash
+bash run_scripts/instructblip/train/run_finetune_instructblip_experiments.sh {dataset_name} {experiment_id}
 ```
 
-The result will be saved in `/input/results/{dataset_name}/{experiment_id}`. You can change this in sh file `run_finetune_instructblip_experiments.sh`.
+The result will be saved in `/input/results/{dataset_name}/{experiment_id}`. You can change this in `sh` file `run_finetune_instructblip_experiments.sh`.
 
 For example, If you want to try experiment 15 for scienceqa, you can use this command.
 
-```python
-bash run_scripts/instructblkp/train/run_finetune_instructblip_experiments.sh scienceqa 15
+```bash
+bash run_scripts/instructblip/train/run_finetune_instructblip_experiments.sh scienceqa 15
 ```
+
+## Citation
+
+## Acknowledgement
+
+## Related Projects
