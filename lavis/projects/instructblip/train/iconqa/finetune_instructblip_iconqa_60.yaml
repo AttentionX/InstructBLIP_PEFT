@@ -39,14 +39,13 @@ run:
   task: iconqa
   # optimizer
   lr_sched: "linear_decay_lr"
-  init_lr: 5e-4
+  init_lr: 1e-4
   min_lr: 0
-  warmup_lr: 5e-4
+  warmup_lr: 1e-4
   warmup_steps: 0
 
   weight_decay: 0.05
   max_epoch: 15
-  disable_early_stopping: True
   batch_size_train: 8
   accum_grad_iters: 2
   batch_size_eval: 1
