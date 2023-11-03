@@ -1,0 +1,22 @@
+datasets:
+  iconqa:
+    # data_dir: ${env.data_dir}/datasets
+    data_type: images # [images|videos|features]
+
+    build_info:
+      # Be careful not to append minus sign (-) before split to avoid itemizing
+      annotations:
+        train:
+          storage: /input/iconqa/annotations/train.json
+        val:
+          storage: /input/iconqa/annotations/val.json
+        test:
+          storage: /input/iconqa/annotations/test.json
+      images:
+        storage: /input/iconqa  
+        train:
+          storage: /input/iconqa/train/choose_txt
+        val:
+          storage: /input/iconqa/val/choose_txt
+        test:
+          storage: /input/iconqa/test/choose_txt

@@ -1,0 +1,1 @@
+python3 -m torch.distributed.run --nproc_per_node=1 train.py --cfg-path lavis/projects/blip2/train/pretrain_stage2.yaml
