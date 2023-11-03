@@ -1,0 +1,22 @@
+datasets:
+  scienceqa:
+    # data_dir: ${env.data_dir}/datasets
+    data_type: images # [images|videos|features]
+
+    build_info:
+      # Be careful not to append minus sign (-) before split to avoid itemizing
+      annotations:
+        train:
+          storage: /input/scienceqa/scienceqa_train.json
+        val:
+          storage: /input/scienceqa/scienceqa_val.json
+        test:
+          storage: /input/scienceqa/scienceqa_test.json
+      images:
+        storage: /input
+        train:
+          storage: /input
+        val:
+          storage: /input
+        test:
+          storage: /input

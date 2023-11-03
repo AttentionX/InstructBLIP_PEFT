@@ -1,0 +1,56 @@
+# New, larger version as of January 1, 2020:
+# 20,523 training image/question pairs
+# 205,230 training answer/answer confidence pairs
+# 4,319 validation image/question pairs
+# 43,190 validation answer/answer confidence pairs
+# 8,000 test image/question pairs
+
+# [
+#   {
+#     "image": "VizWiz_val_00000000.jpg",
+#     "question": "Ok. There is another picture I hope it is a better one.",
+#     "answers": [
+#       {
+#         "answer": "unanswerable",
+#         "answer_confidence": "yes"
+#       },
+#         ...
+#       {
+#         "answer": "unanswerable",
+#         "answer_confidence": "no"
+#       },
+#       {
+#         "answer": "cannot repair this computer automatically",
+#         "answer_confidence": "maybe"
+#       },
+#       {
+#         "answer": "blank screen",
+#         "answer_confidence": "yes"
+#       }
+#     ],
+#     "answer_type": "unanswerable",
+#     "answerable": 0
+#   },
+
+datasets:
+  vizwiz:
+    # data_dir: ${env.data_dir}/datasets
+    data_type: images # [images|videos|features]
+
+    build_info:
+      # Be careful not to append minus sign (-) before split to avoid itemizing
+      annotations:
+        train:
+          storage: ../../../input/disk-50gb/vizwiz/annotations/train.json
+        val:
+          storage: ../../../input/disk-50gb/vizwiz/annotations/val.json
+        test:
+          storage: ../../../input/disk-50gb/vizwiz/annotations/test.json
+      images:
+        storage: ../../../input/disk-50gb/vizwiz/images/
+        train:
+          storage: ../../../input/disk-50gb/vizwiz/images/train
+        val:
+          storage: ../../../input/disk-50gb/vizwiz/images/val
+        test:
+          storage: ../../../input/disk-50gb/vizwiz/images/test
