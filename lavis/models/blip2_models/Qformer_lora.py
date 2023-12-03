@@ -48,6 +48,8 @@ import torch.nn.functional as F
 import math
 from typing import Dict, List
 
+from transformers.activations import ACT2FN
+
 import lavis.models.blip2_models.Qformer as Qformer
 # import lit_llama.model as llama
 
@@ -364,7 +366,8 @@ def check_lora_application(Qformer: nn.Module):
             
     if hasattr(layer, "output"):
         bert_output = layer.output
-        if hasattr(bert_output, "dense") and isinstance(bert_output.dense, MergedLinear):
+        bert_intermediate = layer.intermediate
+        if hasattr(bert_output, "dense") and isinstance(bert_output.dense, MergedLinear) and hasattr(bert_intermediate, "dense") and isinstance(bert_intermediate.dense, MergedLinear):
             print(f"Layer {layer.layer_num}: LoRA is applied to ffn with r value: {bert_output.dense.r}")
     
 
@@ -464,6 +467,7 @@ class BertSelfAttention(Qformer.BertSelfAttention):
         self.all_head_size = self.num_attention_heads * self.attention_head_size
 
         self.query = nn.Linear(config.hidden_size, self.all_head_size)
+        # Check if query is True in cross attention, and check if current layer is self-attention and if selfattention_lora is True
         if (is_cross_attention and self.qkv[0] is True) or (is_cross_attention is not True and self.selfattention_lora is True):
             self.query = MergedLinear(
                 config.hidden_size,
@@ -613,6 +617,28 @@ class BertSelfOutput(Qformer.BertSelfOutput):
         self.LayerNorm = nn.LayerNorm(config.hidden_size, eps=config.layer_norm_eps)
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
         
+class BertIntermediate(Qformer.BertIntermediate):
+    lora_config = LoRAConfig(r=lora_r, alpha=lora_alpha, dropout=lora_dropout)
+    def __init__(self, config):
+        super().__init__(config)
+        # self.dense = nn.Linear(config.hidden_size, config.intermediate_size)
+        self.dense = MergedLinear(
+            config.hidden_size,
+            config.intermediate_size,
+            r=self.lora_config.r,
+            lora_alpha=self.lora_config.alpha,
+            lora_dropout=self.lora_config.dropout,
+            enable_lora=[True],
+            fan_in_fan_out = False,
+            merge_weights=True,
+            bias=True
+        )
+        if isinstance(config.hidden_act, str):
+            self.intermediate_act_fn = ACT2FN[config.hidden_act]
+        else:
+            self.intermediate_act_fn = config.hidden_act
+
+        
 class BertOutput(Qformer.BertOutput):
     lora_config = LoRAConfig(r=lora_r, alpha=lora_alpha, dropout=lora_dropout)
     def __init__(self, config):
@@ -703,5 +729,9 @@ def custom_lora(r=lora_r, alpha=lora_alpha, dropout=lora_dropout, enabled: bool 
         BertOutput.lora_config = LoRAConfig(r=r, alpha=alpha, dropout=dropout)
         bert_output = Qformer.BertOutput
         Qformer.BertOutput = BertOutput
+        BertIntermediate.lora_config = LoRAConfig(r=r, alpha=alpha, dropout=dropout)
+        bert_intermediate = Qformer.BertIntermediate
+        Qformer.BertIntermediate = BertIntermediate
         yield
         Qformer.BertOutput = bert_output
+        Qformer.BertIntermediate = bert_intermediate
