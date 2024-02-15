@@ -10,7 +10,7 @@ benchmark=$1
 experiment=$2
 
 # Setup
-cd /root/InstructBLIP-PEFT
+cd /root/InstructBLIP_PEFT
 # Install dependencies
 apt update
 apt install default-jdk -y
