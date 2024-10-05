@@ -41,7 +41,7 @@ This will save preprocessed scienceQA dataset in `/input/scienceqa/`.
 This is the Instruction Format for ScienceQA dataset.
 
 ```md
-<Image> Context: { {hint} {lecture} } Question: { {question} } Options: { {choices} } Answer: (a) { {answer} }
+Context: { {hint} {lecture} } Question: { {question} } Options: { {choices} } Answer: (a) { {answer} }
 ```
 
 ### Install IconQA dataset
