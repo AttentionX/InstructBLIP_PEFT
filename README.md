@@ -136,6 +136,15 @@ bash run_scripts/instructblip/train/run_finetune_instructblip_experiments.sh sci
 ```
 
 ## Citation
+```bibtex
+@inproceedings{kim2024towards,
+  title={Towards Efficient Visual-Language Alignment of the Q-Former for Visual Reasoning Tasks},
+  author={Kim, Sungkyung and Lee, Adam and Park, Junyoung and Chung, Andrew and Oh, Jusang and Lee, Jay-Yoon},
+  booktitle={Findings of the Association for Computational Linguistics: EMNLP 2024},
+  pages={15155--15165},
+  year={2024}
+}
+```
 
 ## Acknowledgement
 
